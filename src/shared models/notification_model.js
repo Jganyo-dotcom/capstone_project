@@ -12,8 +12,16 @@ const NotificationSchema = new mongoose.Schema(
       enum: ["encouragement", "reminder", "milestone", "recovery"],
       required: true,
     },
-    reminders_timeline:{ type: String, enum: ["Daily", "weekly"], default: "Daily" },
-    reminders_timeline:{ type: String, enum: ["Daily", "weekly"], default: "Daily" },
+    reminders_timeline: {
+      type: String,
+      enum: ["Daily", "weekly"],
+      default: "Daily",
+    },
+    reminders_type: {
+      type: String,
+      enum: ["email", "in-app"],
+      default: "in-app",
+    },
     content: { type: String, required: true },
     scheduledAt: { type: Date, required: true },
     deliveredAt: { type: Date, default: null },
