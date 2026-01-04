@@ -3,6 +3,7 @@
     "@sendgrid/mail": "^8.1.6",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.1",
+    "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "joi": "^18.0.2",
     "jsonwebtoken": "^9.0.3",
@@ -12,7 +13,6 @@
   "name": "capstone-pro",
   "version": "1.0.0",
   "main": "server.js",
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node --env-file=.env server.js",
@@ -21,5 +21,16 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "Installation\r bash\r npm install \r Make sure you have MongoDB running locally or a connection string to a hosted MongoDB instance.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jganyo-dotcom/capstone_project.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Jganyo-dotcom/capstone_project/issues"
+  },
+  "homepage": "https://github.com/Jganyo-dotcom/capstone_project#readme",
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
 }
