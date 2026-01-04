@@ -7,12 +7,13 @@
     "joi": "^18.0.2",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.1.1",
-    "socket.io": "^4.8.3"
+    "node-cron": "^4.2.1",
+    "socket.io": "^4.8.3",
+    "web-push": "^3.6.7"
   },
   "name": "capstone-pro",
   "version": "1.0.0",
   "main": "server.js",
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node --env-file=.env server.js",

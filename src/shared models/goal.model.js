@@ -6,6 +6,7 @@ const StepSchema = new mongoose.Schema({
   completed: { type: Boolean, default: false },
   completedAt: { type: Date, default: null },
   length: { type: String, enum: ["Daily", "weekly"], default: "Daily" },
+  subscription: { type: String, required: true },
 });
 
 const GoalSchema = new mongoose.Schema(
