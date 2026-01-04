@@ -6,10 +6,10 @@ const {
 
 cron.schedule("0 0 * * * *", () => {
   console.log("Running notification job...");
-  sendDailyNoti;
+  sendDailyNoti();
 });
 
 cron.schedule("0 0 * * 0", () => {
   console.log("Running notification job...");
-  sendWeekNoti;
+  sendWeekNoti();
 });

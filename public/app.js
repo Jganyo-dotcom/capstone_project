@@ -164,6 +164,82 @@ async function attachSubscription() {
   }
 }
 
+// ---------------- PUSH SUBSCRIPTION ----------------
+async function registerSW() {
+  if (!("serviceWorker" in navigator))
+    throw new Error("Service Worker not supported");
+  return await navigator.serviceWorker.register("/sw.js");
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+document.getElementById("subscribeBtn").onclick = async () => {
+  const status = document.getElementById("pushStatus");
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") throw new Error("Permission denied");
+
+    const reg = await registerSW();
+    subscription = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+    });
+
+    const res = await fetch("/student/notify-me-daily", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(subscription),
+    });
+    const data = await res.json();
+    res.ok
+      ? showMessage(status, "Subscribed successfully", "success")
+      : showMessage(status, data.error || data.message, "error");
+  } catch (err) {
+    showMessage(status, "Subscribe error: " + err.message, "error");
+  }
+};
+
+document.getElementById("testPushBtn").onclick = async () => {
+  const status = document.getElementById("pushStatus");
+  try {
+    if (!subscription) {
+      return showMessage(
+        status,
+        "No subscription found. Click Subscribe first.",
+        "error"
+      );
+    }
+
+    const res = await fetch("/student/test-push", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(subscription), // <-- send subscription object
+    });
+
+    const data = await res.json();
+    res.ok
+      ? showMessage(status, "Test push sent", "success")
+      : showMessage(status, data.error || data.message, "error");
+  } catch (err) {
+    showMessage(status, "Network error", "error");
+  }
+};
+
 // ---------------- EVENT BINDINGS ----------------
 document.getElementById("registerBtn").onclick = registerUser;
 document.getElementById("loginBtn").onclick = loginUser;

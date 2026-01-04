@@ -5,7 +5,7 @@ const StepSchema = new mongoose.Schema({
   title: { type: String, required: true },
   completed: { type: Boolean, default: false },
   completedAt: { type: Date, default: null },
-  length: { type: String, enum: ["Daily", "weekly"], default: "Daily" },
+  frequency: { type: String, enum: ["Daily", "weekly"], default: "Daily" },
   subscription: { type: String, required: true },
 });
 

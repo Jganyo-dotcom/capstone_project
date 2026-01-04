@@ -4,13 +4,13 @@ const wp = require("web-push");
 
 wp.setVapidDetails(
   "mailto:elikemejay@gmail.com",
-  process.env.public_Key,
-  process.env.private_key
-);
+  process.env.publicKey,
+  process.env.privatekey
+);  
 
 async function sendDailyNoti() {
   try {
-    const dailySteps = await GoalSchema.find({ "steps.length": "Daily" });
+    const dailySteps = await GoalSchema.find({ "steps.frequency": "Daily" });
     for (const step of dailySteps) {
       const payload = JSON.stringify({
         title: "Daily Step reminder",
@@ -42,4 +42,6 @@ async function sendWeekNoti() {
   }
 }
 
-module.exports = { sendDailyNoti, sendWeekNoti };
+// reward logic
+
+module.exports = { sendDailyNoti, sendWeekNoti, sendDailyNoti, sendWeekNoti };

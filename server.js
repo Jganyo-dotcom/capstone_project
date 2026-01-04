@@ -4,6 +4,7 @@ const port = process.env.PORT || 3000;
 const db_connection = require("./config/db.coonection");
 const registerRoute = require("./src/modules/user_module/user_route");
 const path = require("path");
+const notiRoute = require("./src/modules/notification & reward module/noti_route");
 
 app.use(express.json());
 db_connection();
@@ -14,6 +15,7 @@ app.get("/", async (req, res) => {
 });
 
 app.use("/student", registerRoute);
+app.use("/student", notiRoute);
 
 app.listen(port, () => {
   console.log(`server is running on ${port}`);
