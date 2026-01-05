@@ -1,5 +1,9 @@
 const express = require("express");
-const { sendDailyNoti, sendWeekNoti } = require("./noti_validation");
+const {
+  sendDailyNoti,
+  sendWeeklyNoti,
+  createGoal,
+} = require("./noti_validation");
 const router = express.Router();
 
 const wp = require("web-push");
@@ -23,8 +27,8 @@ router.post("/test-push", async (req, res) => {
 });
 
 module.exports = router;
-
+router.post("/goals", createGoal);
 router.post("/notify-me-daily", sendDailyNoti); // send the noti
-router.post("/notify-me-weekly", sendWeekNoti);
+router.post("/notify-me-weekly", sendWeeklyNoti);
 
 module.exports = router;

@@ -1,13 +1,12 @@
-// State
-let token = null;
+// ---------------- STATE ----------------
+let token = localStorage.getItem("token") || null;
 let vapidPublicKey = null;
 let subscription = null;
 
-// Utility functions
+// ---------------- UTILITIES ----------------
 function showLoader(el) {
   el.innerHTML = 'Processing <span class="loader"></span>';
 }
-
 function showMessage(el, msg, type = "success") {
   el.className = type;
   el.textContent = msg;
@@ -62,6 +61,7 @@ async function loginUser() {
 
     if (res.ok && data.token) {
       token = data.token;
+      localStorage.setItem("token", token); // save token
       vapidPublicKey = data.vapidPublicKey;
       showMessage(status, "Login successful", "success");
 
@@ -69,7 +69,6 @@ async function loginUser() {
       document.getElementById("goalSection").classList.remove("hidden");
       document.getElementById("attachSection").classList.remove("hidden");
     } else {
-      alert(data.message);
       showMessage(status, data.error || data.message, "error");
     }
   } catch (err) {
@@ -79,7 +78,6 @@ async function loginUser() {
 
 // ---------------- DYNAMIC STEPS ----------------
 const stepsContainer = document.getElementById("stepsContainer");
-
 stepsContainer.addEventListener("keydown", (e) => {
   if (e.target.classList.contains("stepInput") && e.key === "Enter") {
     e.preventDefault();
@@ -100,9 +98,14 @@ async function createGoal() {
   const status = document.getElementById("goalStatus");
 
   const steps = [...document.querySelectorAll(".stepInput")]
-    .map((input) => input.value.trim())
+    .map((input, index) => input.value.trim())
     .filter((val) => val !== "")
-    .map((name) => ({ name, frequency }));
+    .map((name, index) => ({
+      index,
+      title: name,
+      frequency,
+      subscription,
+    }));
 
   if (!title || steps.length === 0) {
     return showMessage(status, "Title and steps required", "error");
@@ -110,14 +113,20 @@ async function createGoal() {
 
   showLoader(status);
   try {
+    if (!subscription) {
+      alert("Subscribe to reminders before creating goals");
+      return;
+    }
+
     const res = await fetch("/student/goals", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${localStorage.getItem("token")}`, // always use stored token
       },
       body: JSON.stringify({ title, steps }),
     });
+
     const data = await res.json();
 
     if (res.ok) {
@@ -148,7 +157,7 @@ async function attachSubscription() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
       body: JSON.stringify(subscription),
     });
@@ -198,7 +207,7 @@ document.getElementById("subscribeBtn").onclick = async () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
       body: JSON.stringify(subscription),
     });
@@ -222,13 +231,13 @@ document.getElementById("testPushBtn").onclick = async () => {
       );
     }
 
-    const res = await fetch("/student/test-push", {
+    const res = await fetch("/student/test-push/student/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
-      body: JSON.stringify(subscription), // <-- send subscription object
+      body: JSON.stringify(subscription),
     });
 
     const data = await res.json();

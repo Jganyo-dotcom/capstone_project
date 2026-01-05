@@ -2,11 +2,11 @@ const mongoose = require("mongoose");
 
 const StepSchema = new mongoose.Schema({
   index: { type: Number, required: true },
-  title: { type: String, required: true },
+  name: { type: String, required: true },
   completed: { type: Boolean, default: false },
   completedAt: { type: Date, default: null },
   frequency: { type: String, enum: ["Daily", "weekly"], default: "Daily" },
-  subscription: { type: String, required: true },
+  subscription: { type: Object, required: true },
 });
 
 const GoalSchema = new mongoose.Schema(
@@ -20,6 +20,7 @@ const GoalSchema = new mongoose.Schema(
     StartDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
     status: { type: String, enum: ["active", "inactive"], default: "active" },
+    lastNotifiedStep: { type: Number, default: -1 },
     steps: [StepSchema],
   },
   { timestamps: true }
