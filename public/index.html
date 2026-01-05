@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Goal Tracker with Push</title>
+  </head>
+  <style>
+    body {
+      font-family: system-ui, Arial, sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 40px auto;
+      padding: 24px;
+      background: #111827;
+      border-radius: 12px;
+    }
+
+    h1 {
+      margin-bottom: 16px;
+    }
+
+    section {
+      margin-top: 24px;
+      padding-top: 12px;
+      border-top: 1px solid #374151;
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      margin: 8px 0;
+      flex-wrap: wrap;
+    }
+
+    input,
+    select,
+    button {
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #374151;
+      background: #0b1220;
+      color: #e5e7eb;
+    }
+
+    button {
+      cursor: pointer;
+      background: #2563eb;
+      border: none;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    p {
+      color: #93c5fd;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .success {
+      color: #10b981;
+    }
+
+    .error {
+      color: #ef4444;
+    }
+
+    .loader {
+      border: 3px solid #374151;
+      border-top: 3px solid #2563eb;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-left: 8px;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+  <body>
+    <div class="container">
+      <h1>Goal Tracker</h1>
+
+      <!-- Auth Section -->
+      <section class="auth">
+        <h2>Authentication</h2>
+        <div class="row">
+          <input id="email" type="email" placeholder="Email" />
+          <input id="password" type="password" placeholder="Password" />
+        </div>
+        <div class="row">
+          <button id="registerBtn">Register</button>
+          <button id="loginBtn">Login</button>
+        </div>
+        <p id="authStatus"></p>
+
+        <section class="push">
+          <h2>Push Notifications</h2>
+          <div class="row">
+            <button id="subscribeBtn">Subscribe</button>
+            <button id="testPushBtn">Send Test Push</button>
+          </div>
+          <p id="pushStatus"></p>
+        </section>
+      </section>
+
+      <!-- Push Section -->
+      <section class="push">
+        <h2>Push Notifications</h2>
+        <div class="row">
+          <button id="subscribeBtn">Subscribe</button>
+          <button id="testPushBtn">Send Test Push</button>
+        </div>
+        <p id="pushStatus"></p>
+      </section>
+
+      <!-- Goal Section (hidden until login) -->
+      <section id="goalSection" class="hidden">
+        <h2>Create a Goal</h2>
+        <div class="row">
+          <input id="goalTitle" placeholder="Goal title" />
+        </div>
+        <div class="row" id="stepsContainer">
+          <input class="stepInput" placeholder="Step name" />
+        </div>
+        <div class="row">
+          <select id="stepFrequency">
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+          </select>
+          <button id="createGoalBtn">Create Goal</button>
+        </div>
+        <p id="goalStatus"></p>
+      </section>
+
+      <!-- Attach Section (hidden until login) -->
+      <section id="attachSection" class="hidden">
+        <h2>Attach Subscription</h2>
+        <div class="row">
+          <input id="goalId" placeholder="Goal ID" />
+        </div>
+        <div class="row">
+          <button id="attachSubBtn">Attach subscription to step 0</button>
+        </div>
+        <p id="attachStatus"></p>
+      </section>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
