@@ -98,21 +98,18 @@ document.getElementById("loginBtn").addEventListener("click", loginUser);
 
 // ---------------- DYNAMIC STEPS ----------------
 const stepsContainer = document.getElementById("stepsContainer");
-stepsContainer.addEventListener("keydown", (e) => {
+
+stepsContainer.addEventListener("change", (e) => {
   if (
     e.target.classList.contains("stepInput") &&
-    (e.key === "Enter" || e.key === "Tab")
+    e.target.value.trim() !== ""
   ) {
-    e.preventDefault();
-    if (e.target.value.trim() !== "") {
-      const newInput = document.createElement("input");
-      newInput.className = "stepInput";
-      newInput.placeholder = "Step name";
-      // hint for mobile keyboards
-      newInput.setAttribute("enterkeyhint", "done");
-      stepsContainer.appendChild(newInput);
-      newInput.focus();
-    }
+    const newInput = document.createElement("input");
+    newInput.className = "stepInput";
+    newInput.placeholder = "Step name";
+    newInput.setAttribute("enterkeyhint", "done"); // helps mobile keyboards
+    stepsContainer.appendChild(newInput);
+    newInput.focus();
   }
 });
 
@@ -162,36 +159,6 @@ async function createGoal() {
 }
 
 // ---------------- ATTACH SUBSCRIPTION ----------------
-async function attachSubscription() {
-  const goalId = document.getElementById("goalId").value.trim();
-  const status = document.getElementById("attachStatus");
-
-  if (!subscription) {
-    return showMessage(status, "Subscribe first", "error");
-  }
-  if (!goalId) {
-    return showMessage(status, "Goal ID required", "error");
-  }
-
-  showLoader(status);
-  try {
-    const res = await fetch(`/api/goals/${goalId}/steps/0/subscription`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: JSON.stringify(subscription),
-    });
-    const data = await res.json();
-
-    res.ok
-      ? showMessage(status, "Subscription attached successfully", "success")
-      : showMessage(status, data.error || data.message, "error");
-  } catch {
-    showMessage(status, "Network error", "error");
-  }
-}
 
 // ---------------- PUSH SUBSCRIPTION ----------------
 async function registerSW() {
@@ -270,4 +237,3 @@ document.getElementById("testPushBtn").onclick = async () => {
 // ---------------- EVENT BINDINGS ----------------
 document.getElementById("loginBtn").onclick = loginUser;
 document.getElementById("createGoalBtn").onclick = createGoal;
-document.getElementById("attachSubBtn").onclick = attachSubscription;
