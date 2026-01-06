@@ -64,7 +64,7 @@ async function sendDailyNoti() {
 
         await wp.sendNotification(step.subscription, payload);
         console.log(
-          `Daily notification sent to user ${goal.userId} for step ${step.name}`
+          `Daily notification sent to user ${goal.user} for step ${step.name}`
         );
       } else if (step && step.completed === true) {
         // If the current step is done, move to the next one
