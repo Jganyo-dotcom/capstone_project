@@ -4,7 +4,7 @@ const StreakSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Users",
       required: true,
     },
     currentStreakDays: { type: Number, default: 0 },

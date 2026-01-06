@@ -15,13 +15,13 @@ const registerNewUser = async (req, res) => {
   // find email is existing
   const existing_user = await UserSchema.findOne({ email: value.email });
   if (existing_user) {
-    return res.status(400).json({ mesage: "email already exist" });
+    return res.status(400).json({ message: "email already exist" });
   }
   const existing_username = await UserSchema.findOne({
     username: value.username,
   });
   if (existing_username) {
-    return res.status(400).json({ mesage: "username already taken" });
+    return res.status(400).json({ message: "username already taken" });
   }
 
   try {
@@ -63,12 +63,12 @@ const LoginUser = async (req, res) => {
       return res.status(400).json({ message: error.details[0].message });
     }
     let tryingToLoginUser;
-    if (value.main.includes("@")) {
+    if (value.email.includes("@")) {
       //find the user
-      tryingToLoginUser = await UserSchema.findOne({ email: value.main });
+      tryingToLoginUser = await UserSchema.findOne({ email: value.email});
     } else {
       tryingToLoginUser = await UserSchema.findOne({
-        username: value.main,
+        username: value.username,
       });
     }
 
@@ -93,7 +93,7 @@ const LoginUser = async (req, res) => {
         username: tryingToLoginUser.username,
         phone: tryingToLoginUser.phone,
       },
-      process.env.JWT_SECRETE,
+      process.env.JWT_SECRET,
       { expiresIn: process.env.EXPIRES_IN }
     );
 

@@ -5,9 +5,10 @@
     "body-parser": "^2.2.1",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
+    "express-validator": "^7.3.1",
     "joi": "^18.0.2",
     "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.1.1",
+    "mongoose": "^9.1.2",
     "socket.io": "^4.8.3"
   },
   "name": "capstone-pro",
