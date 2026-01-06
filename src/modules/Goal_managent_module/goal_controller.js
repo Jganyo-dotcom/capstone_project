@@ -4,8 +4,8 @@ const UserModel = require("../../shared models/User_model.js");
 const wp = require("web-push");
 wp.setVapidDetails(
   "mailto:elikemejay@gmail.com",
-  process.env.publicKey,
-  process.env.privatekey
+  process.env.PUBLIC_KEY,
+  process.env.PRIVATE_KEY
 );
 const createGoal = async (req, res, next) => {
   try {
