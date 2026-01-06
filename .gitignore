@@ -2,4 +2,3 @@ node_modules/
 .env
 admin.setup.js
 gene.js
-public/
