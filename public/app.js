@@ -99,12 +99,17 @@ document.getElementById("loginBtn").addEventListener("click", loginUser);
 // ---------------- DYNAMIC STEPS ----------------
 const stepsContainer = document.getElementById("stepsContainer");
 stepsContainer.addEventListener("keydown", (e) => {
-  if (e.target.classList.contains("stepInput") && e.key === "Enter") {
+  if (
+    e.target.classList.contains("stepInput") &&
+    (e.key === "Enter" || e.key === "Tab")
+  ) {
     e.preventDefault();
     if (e.target.value.trim() !== "") {
       const newInput = document.createElement("input");
       newInput.className = "stepInput";
       newInput.placeholder = "Step name";
+      // hint for mobile keyboards
+      newInput.setAttribute("enterkeyhint", "done");
       stepsContainer.appendChild(newInput);
       newInput.focus();
     }
