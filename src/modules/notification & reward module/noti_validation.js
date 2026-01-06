@@ -1,6 +1,11 @@
 const notiSchema = require("../../shared models/notification_model");
 const wp = require("web-push");
 const Goal = require("../../modules/Goal_managent_module/goal_model"); // adjust path
+wp.setVapidDetails(
+  "mailto:elikemejay@gmail.com",
+  process.env.publicKey,
+  process.env.privatekey
+);
 
 // Create a new goal with steps + subscription
 // async function createGoal(req, res) {
@@ -30,8 +35,6 @@ const Goal = require("../../modules/Goal_managent_module/goal_model"); // adjust
 //     res.status(500).json({ message: "Error creating goal" });
 //   }
 // }
-
-
 
 async function sendDailyNoti() {
   try {
@@ -63,8 +66,6 @@ async function sendDailyNoti() {
         console.log(
           `Daily notification sent to user ${goal.userId} for step ${step.name}`
         );
-
-        
       } else if (step && step.completed === true) {
         // If the current step is done, move to the next one
         goal.lastNotifiedStep = currentIndex + 1;
