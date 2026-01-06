@@ -9,7 +9,7 @@ wp.setVapidDetails(
 );
 
 // controllers/goalController.js
-const Goal = require("../../shared models/goal.model"); // adjust path
+const Goal = require("../../shared models/goal.model"); // adjust path to yours okay
 
 // Create a new goal with steps + subscription
 async function createGoal(req, res) {
@@ -18,7 +18,7 @@ async function createGoal(req, res) {
     const userId = req.user.id; //  auth middleware sets req.user
 
     if (!title || !steps || steps.length === 0) {
-      return res.status(400).json({ message: "Title and steps are required" });
+      return res.status(400).json({ message: "Title and steps are required" });// did this cos the frontend guys
     }
     console.log(steps);
 
@@ -28,7 +28,7 @@ async function createGoal(req, res) {
       StartDate: new Date(), // user will say okay
       endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // example: 1 week later but user will input this
       status: "active",
-      steps: steps, // save steps array directly
+      steps: steps, // save steps array directly 
       lastNotifiedStep: 0, // dont worry about this it helps me to send reminders
     });
 
