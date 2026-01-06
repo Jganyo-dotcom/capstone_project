@@ -6,6 +6,7 @@ wp.setVapidDetails(
   process.env.PUBLIC_KEY,
   process.env.PRIVATE_KEY
 );
+const baseUrl = process.env.APP_BASE_URL || "http://localhost:3000";
 
 // Create a new goal with steps + subscription
 // async function createGoal(req, res) {
@@ -59,7 +60,7 @@ async function sendDailyNoti() {
         const payload = JSON.stringify({
           title: "Daily Step reminder",
           body: `Your step "${step.name}" is waiting to be completed`,
-          data: { url: `/steps/${step._id}` },
+          data: { url: `${baseUrl}/steps/${step._id}` },
         });
 
         await wp.sendNotification(step.subscription, payload);
