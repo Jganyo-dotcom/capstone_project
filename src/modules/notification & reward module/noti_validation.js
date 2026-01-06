@@ -3,8 +3,8 @@ const wp = require("web-push");
 const Goal = require("../../modules/Goal_managent_module/goal_model"); // adjust path
 wp.setVapidDetails(
   "mailto:elikemejay@gmail.com",
-  process.env.publicKey,
-  process.env.privatekey
+  process.env.PUBLIC_KEY,
+  process.env.PRIVATE_KEY
 );
 
 // Create a new goal with steps + subscription
