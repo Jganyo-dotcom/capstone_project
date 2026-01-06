@@ -28,7 +28,7 @@ const { CheckroleonAll } = require("../../middlewares/role.js");
 
 
 router.delete("/goals", auth, CheckroleonAll, clearGoals);
-router.post('/goals', validateCreateGoal, auth, createGoal);
+router.post('/goals', auth, createGoal);
 router.post('/goals/:goalId/steps', validateStep, auth, addStep);
 router.get('/goals', auth, getGoals);
 router.get('/goals/goalId', auth, getGoalById);

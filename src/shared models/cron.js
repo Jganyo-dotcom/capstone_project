@@ -5,8 +5,14 @@ const {
 } = require("../modules/notification & reward module/noti_validation");
 
 // Every day at midnight (00:00)
-cron.schedule("0 0 * * *", () => {
-  console.log("Running daily notification job...");
+// cron.schedule("0 0 * * *", () => {
+//   console.log("Running daily notification job...");
+//   sendDailyNoti();
+// });
+
+// Every minute
+cron.schedule("* * * * *", () => {
+  console.log("Running notification job...");
   sendDailyNoti();
 });
 

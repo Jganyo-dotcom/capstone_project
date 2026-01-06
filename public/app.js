@@ -1,20 +1,29 @@
 // ---------------- STATE ----------------
 let token = localStorage.getItem("token") || null;
-let vapidPublicKey = null;
-let subscription = JSON.parse(localStorage.getItem("subscription")) || null;
+let vapidPublicKey = localStorage.getItem("vapidPublicKey") || null;
+let subscription = null;
+
+try {
+  subscription = JSON.parse(localStorage.getItem("subscription")) || null;
+} catch {
+  subscription = null;
+}
 
 // ---------------- UTILITIES ----------------
-function showLoader(el) {
-  el.innerHTML = 'Processing <span class="loader"></span>';
+function showLoader(el, msg = "Processing") {
+  if (el) el.innerHTML = `${msg} <span class="loader"></span>`;
 }
+
 function showMessage(el, msg, type = "success") {
-  el.className = type;
-  el.textContent = msg;
+  if (el) {
+    el.className = type;
+    el.textContent = msg;
+  }
 }
 
 // ---------------- AUTH ----------------
 async function registerUser(e) {
-  e.preventDefault(); // prevent accidental form submission
+  e.preventDefault();
 
   const name = document.getElementById("regName").value.trim();
   const username = document.getElementById("regUsername").value.trim();
@@ -45,7 +54,7 @@ async function registerUser(e) {
 }
 
 async function loginUser() {
-  const main = document.getElementById("loginMain").value.trim(); // ✅ email or username
+  const main = document.getElementById("loginMain").value.trim();
   const password = document.getElementById("loginPassword").value.trim();
   const status = document.getElementById("loginStatus");
 
@@ -53,7 +62,7 @@ async function loginUser() {
     return showMessage(status, "Email/Username and password required", "error");
   }
 
-  showLoader(status);
+  showLoader(status, "Logging in");
   try {
     const res = await fetch("/student/login", {
       method: "POST",
@@ -64,11 +73,15 @@ async function loginUser() {
 
     if (res.ok && data.token) {
       localStorage.setItem("token", data.token);
-      vapidPublicKey = data.vapidPublicKey;
-      showMessage(status, "Login successful", "success");
 
+      if (data.vapidPublicKey) {
+        vapidPublicKey = data.vapidPublicKey;
+        localStorage.setItem("vapidPublicKey", vapidPublicKey);
+      }
+
+      showMessage(status, "Login successful", "success");
       document.getElementById("goalSection").classList.remove("hidden");
-      document.getElementById("attachSection").classList.remove("hidden");
+      document.getElementById("attachSection")?.classList.remove("hidden");
     } else {
       showMessage(status, data.error || data.message, "error");
     }
@@ -77,6 +90,7 @@ async function loginUser() {
   }
 }
 
+// ---------------- UI TOGGLES ----------------
 const loginSection = document.getElementById("loginSection");
 const registerSection = document.getElementById("registerSection");
 
@@ -92,24 +106,22 @@ document.getElementById("showLogin").addEventListener("click", (e) => {
   loginSection.classList.remove("hidden");
 });
 
-// Attach events
-document.getElementById("registerBtn").addEventListener("click", registerUser);
-document.getElementById("loginBtn").addEventListener("click", loginUser);
-
 // ---------------- DYNAMIC STEPS ----------------
+
 const stepsContainer = document.getElementById("stepsContainer");
 
-stepsContainer.addEventListener("change", (e) => {
+stepsContainer.addEventListener("input", (e) => {
   if (
     e.target.classList.contains("stepInput") &&
-    e.target.value.trim() !== ""
+    e.target.value.trim() !== "" &&
+    !e.target.nextElementSibling // only add if there's no next input yet
   ) {
     const newInput = document.createElement("input");
+    newInput.type = "text";
     newInput.className = "stepInput";
     newInput.placeholder = "Step name";
-    newInput.setAttribute("enterkeyhint", "done"); // helps mobile keyboards
+    newInput.setAttribute("enterkeyhint", "done");
     stepsContainer.appendChild(newInput);
-    newInput.focus();
   }
 });
 
@@ -120,26 +132,29 @@ async function createGoal() {
   const status = document.getElementById("goalStatus");
 
   const steps = [...document.querySelectorAll(".stepInput")]
-    .map((input, index) => input.value.trim())
+    .map((input) => input.value.trim())
     .filter((val) => val !== "")
     .map((name, index) => ({
       index,
-      name: name,
+      name,
       frequency,
-      subscription: subscription, // attach subscription object
+      subscription,
     }));
 
   if (!title || steps.length === 0) {
     return showMessage(status, "Title and steps required", "error");
   }
 
-  showLoader(status);
-  try {
-    if (!subscription) {
-      alert("Subscribe to reminders before creating goals");
-      return;
-    }
+  if (!subscription) {
+    return showMessage(
+      status,
+      "Subscribe to reminders before creating goals",
+      "error"
+    );
+  }
 
+  showLoader(status, "Creating goal");
+  try {
     const res = await fetch("/student/create/goals", {
       method: "POST",
       headers: {
@@ -158,13 +173,11 @@ async function createGoal() {
   }
 }
 
-// ---------------- ATTACH SUBSCRIPTION ----------------
-
 // ---------------- PUSH SUBSCRIPTION ----------------
 async function registerSW() {
   if (!("serviceWorker" in navigator))
     throw new Error("Service Worker not supported");
-  return await navigator.serviceWorker.register("/sw.js");
+  return await navigator.serviceWorker.register("/sw.js", { scope: "/" });
 }
 
 function urlBase64ToUint8Array(base64String) {
@@ -178,28 +191,35 @@ function urlBase64ToUint8Array(base64String) {
   return outputArray;
 }
 
+async function getOrCreateSubscription() {
+  await registerSW();
+  const reg = await navigator.serviceWorker.ready;
+  const existing = await reg.pushManager.getSubscription();
+  if (existing) return existing;
+
+  if (!vapidPublicKey) throw new Error("Missing VAPID key. Login first.");
+
+  return await reg.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+  });
+}
+
 document.getElementById("subscribeBtn").onclick = async () => {
   const status = document.getElementById("pushStatus");
   try {
-    // Request permission first
     const permission = await Notification.requestPermission();
     if (permission !== "granted") {
-      showMessage(
+      return showMessage(
         status,
-        "Notifications are blocked. Please enable them in browser settings.",
+        "Notifications are blocked. Enable them in browser settings.",
         "error"
       );
-      return; // stop here if denied
     }
 
-    // Register service worker and subscribe
-    const reg = await registerSW();
-    subscription = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-    });
-
+    subscription = await getOrCreateSubscription();
     localStorage.setItem("subscription", JSON.stringify(subscription));
+    showMessage(status, "Subscribed successfully", "success");
   } catch (err) {
     showMessage(status, "Subscribe error: " + err.message, "error");
   }
@@ -235,5 +255,6 @@ document.getElementById("testPushBtn").onclick = async () => {
 };
 
 // ---------------- EVENT BINDINGS ----------------
+document.getElementById("registerBtn").onclick = registerUser;
 document.getElementById("loginBtn").onclick = loginUser;
 document.getElementById("createGoalBtn").onclick = createGoal;
