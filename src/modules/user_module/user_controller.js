@@ -107,7 +107,12 @@ const LoginUser = async (req, res) => {
     };
 
     //if password is right
-    res.status(200).json({ message: "login was successful", safe_user, token });
+    res.status(200).json({
+      message: "login was successful",
+      safe_user,
+      token,
+      vapidPublicKey: process.env.publicKey,
+    });
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "something went wrong while logging in" });
