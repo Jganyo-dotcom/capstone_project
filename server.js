@@ -5,6 +5,7 @@ const db_connection = require("./config/db.coonection");
 const registerRoute = require("./src/modules/user_module/user_route");
 const path = require("path");
 const notiRoute = require("./src/modules/notification & reward module/noti_route");
+require("./src/shared models/cron");
 
 app.use(express.json());
 db_connection();

@@ -1,7 +1,7 @@
 // ---------------- STATE ----------------
 let token = localStorage.getItem("token") || null;
 let vapidPublicKey = null;
-let subscription = null;
+let subscription = JSON.parse(localStorage.getItem("subscription")) || null;
 
 // ---------------- UTILITIES ----------------
 function showLoader(el) {
@@ -14,12 +14,15 @@ function showMessage(el, msg, type = "success") {
 
 // ---------------- AUTH ----------------
 async function registerUser() {
-  const main = document.getElementById("email").value.trim();
+  const name = document.getElementById("name").value.trim();
+  const username = document.getElementById("username").value.trim();
+  const phone = document.getElementById("phone").value.trim();
   const password = document.getElementById("password").value.trim();
+  const email = document.getElementById("email").value.trim();
   const status = document.getElementById("authStatus");
 
-  if (!main || !password) {
-    return showMessage(status, "Email and password required", "error");
+  if (!name || !username || !phone || !password) {
+    return showMessage(status, "All fields are required", "error");
   }
 
   showLoader(status);
@@ -27,27 +30,25 @@ async function registerUser() {
     const res = await fetch("/student/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ main, password }),
+      body: JSON.stringify({ name, username, phone, password, email }),
     });
     const data = await res.json();
 
-    if (res.ok) {
-      showMessage(status, "Registration successful", "success");
-    } else {
-      showMessage(status, data.error || data.message, "error");
-    }
-  } catch (err) {
+    res.ok
+      ? showMessage(status, "Registration successful", "success")
+      : showMessage(status, data.error || data.message, "error");
+  } catch {
     showMessage(status, "Network error", "error");
   }
 }
 
 async function loginUser() {
-  const main = document.getElementById("email").value.trim();
+  const main = document.getElementById("username").value.trim();
   const password = document.getElementById("password").value.trim();
   const status = document.getElementById("authStatus");
 
-  if (!main || !password) {
-    return showMessage(status, "Email and password required", "error");
+  if (!username || !password) {
+    return showMessage(status, "Username and password required", "error");
   }
 
   showLoader(status);
@@ -61,17 +62,16 @@ async function loginUser() {
 
     if (res.ok && data.token) {
       token = data.token;
-      localStorage.setItem("token", token); // save token
+      localStorage.setItem("token", token);
       vapidPublicKey = data.vapidPublicKey;
       showMessage(status, "Login successful", "success");
 
-      // Reveal hidden sections
       document.getElementById("goalSection").classList.remove("hidden");
       document.getElementById("attachSection").classList.remove("hidden");
     } else {
       showMessage(status, data.error || data.message, "error");
     }
-  } catch (err) {
+  } catch {
     showMessage(status, "Network error", "error");
   }
 }
@@ -102,9 +102,9 @@ async function createGoal() {
     .filter((val) => val !== "")
     .map((name, index) => ({
       index,
-      title: name,
+      name: name,
       frequency,
-      subscription,
+      subscription: subscription, // attach subscription object
     }));
 
   if (!title || steps.length === 0) {
@@ -122,19 +122,16 @@ async function createGoal() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`, // always use stored token
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
       body: JSON.stringify({ title, steps }),
     });
 
     const data = await res.json();
-
-    if (res.ok) {
-      showMessage(status, "Goal created successfully", "success");
-    } else {
-      showMessage(status, data.error || data.message, "error");
-    }
-  } catch (err) {
+    res.ok
+      ? showMessage(status, "Goal created successfully", "success")
+      : showMessage(status, data.error || data.message, "error");
+  } catch {
     showMessage(status, "Network error", "error");
   }
 }
@@ -163,12 +160,10 @@ async function attachSubscription() {
     });
     const data = await res.json();
 
-    if (res.ok) {
-      showMessage(status, "Subscription attached successfully", "success");
-    } else {
-      showMessage(status, data.error || data.message, "error");
-    }
-  } catch (err) {
+    res.ok
+      ? showMessage(status, "Subscription attached successfully", "success")
+      : showMessage(status, data.error || data.message, "error");
+  } catch {
     showMessage(status, "Network error", "error");
   }
 }
@@ -194,27 +189,25 @@ function urlBase64ToUint8Array(base64String) {
 document.getElementById("subscribeBtn").onclick = async () => {
   const status = document.getElementById("pushStatus");
   try {
+    // Request permission first
     const permission = await Notification.requestPermission();
-    if (permission !== "granted") throw new Error("Permission denied");
+    if (permission !== "granted") {
+      showMessage(
+        status,
+        "Notifications are blocked. Please enable them in browser settings.",
+        "error"
+      );
+      return; // stop here if denied
+    }
 
+    // Register service worker and subscribe
     const reg = await registerSW();
     subscription = await reg.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
     });
 
-    const res = await fetch("/student/notify-me-daily", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: JSON.stringify(subscription),
-    });
-    const data = await res.json();
-    res.ok
-      ? showMessage(status, "Subscribed successfully", "success")
-      : showMessage(status, data.error || data.message, "error");
+    localStorage.setItem("subscription", JSON.stringify(subscription));
   } catch (err) {
     showMessage(status, "Subscribe error: " + err.message, "error");
   }
@@ -231,7 +224,7 @@ document.getElementById("testPushBtn").onclick = async () => {
       );
     }
 
-    const res = await fetch("/student/test-push/student/", {
+    const res = await fetch("/student/notify-me-daily", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -244,7 +237,7 @@ document.getElementById("testPushBtn").onclick = async () => {
     res.ok
       ? showMessage(status, "Test push sent", "success")
       : showMessage(status, data.error || data.message, "error");
-  } catch (err) {
+  } catch {
     showMessage(status, "Network error", "error");
   }
 };
