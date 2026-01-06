@@ -15,13 +15,13 @@ const registerNewUser = async (req, res) => {
   // find email is existing
   const existing_user = await UserSchema.findOne({ email: value.email });
   if (existing_user) {
-    return res.status(400).json({ mesage: "email already exist" });
+    return res.status(400).json({ message: "email already exist" });
   }
   const existing_username = await UserSchema.findOne({
     username: value.username,
   });
   if (existing_username) {
-    return res.status(400).json({ mesage: "username already taken" });
+    return res.status(400).json({ message: "username already taken" });
   }
 
   try {
@@ -30,7 +30,7 @@ const registerNewUser = async (req, res) => {
     const hashed_password = await bcrypt.hash(value.password, salt);
 
     // go on to register user
-    const User_info = await UserSchema({
+    const User_info = new UserSchema({
       email: value.email,
       name: value.name,
       username: value.username,
@@ -89,7 +89,7 @@ const LoginUser = async (req, res) => {
         id: tryingToLoginUser._id,
         name: tryingToLoginUser.name,
         email: tryingToLoginUser.email,
-        role: "Guest",
+        role: tryingToLoginUser.role,
         username: tryingToLoginUser.username,
         phone: tryingToLoginUser.phone,
       },

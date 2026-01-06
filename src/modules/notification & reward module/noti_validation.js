@@ -1,46 +1,37 @@
 const notiSchema = require("../../shared models/notification_model");
-const GoalSchema = require("../../shared models/goal.model");
 const wp = require("web-push");
-
-wp.setVapidDetails(
-  "mailto:elikemejay@gmail.com",
-  process.env.publicKey,
-  process.env.privatekey
-);
-
-// controllers/goalController.js
-const Goal = require("../../shared models/goal.model"); // adjust path
+const Goal = require("../../modules/Goal_managent_module/goal_model"); // adjust path
 
 // Create a new goal with steps + subscription
-async function createGoal(req, res) {
-  try {
-    const { title, steps } = req.body;
-    const userId = req.user.id; //  auth middleware sets req.user
+// async function createGoal(req, res) {
+//   try {
+//     const { title, steps } = req.body;
+//     const userId = req.user.id; //  auth middleware sets req.user
 
-    if (!title || !steps || steps.length === 0) {
-      return res.status(400).json({ message: "Title and steps are required" });
-    }
-    console.log(steps);
+//     if (!title || !steps || steps.length === 0) {
+//       return res.status(400).json({ message: "Title and steps are required" });
+//     }
+//     console.log(steps);
 
-    const goal = new Goal({
-      userId,
-      title,
-      StartDate: new Date(), // user will say okay
-      endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // example: 1 week later but user will input this
-      status: "active",
-      steps: steps, // save steps array directly
-      lastNotifiedStep: 0, // dont worry about this it helps me to send reminders
-    });
+//     const goal = new Goal({
+//       userId,
+//       title,
+//       StartDate: new Date(), // user will say okay
+//       endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // example: 1 week later but user will input this
+//       status: "active",
+//       steps: steps, // save steps array directly
+//       lastNotifiedStep: 0, // dont worry about this it helps me to send reminders
+//     });
 
-    await goal.save();
-    res.status(201).json(goal);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Error creating goal" });
-  }
-}
+//     await goal.save();
+//     res.status(201).json(goal);
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Error creating goal" });
+//   }
+// }
 
-module.exports = { createGoal };
+
 
 async function sendDailyNoti() {
   try {
@@ -125,16 +116,16 @@ async function sendWeeklyNoti() {
   }
 }
 
-async function clearGoals(req, res) {
-  try {
-    await Goal.deleteMany({});
-    res.status(200).json({ message: "All goals cleared successfully" });
-  } catch (err) {
-    console.error("Error clearing goals:", err);
-    res.status(500).json({ message: "Error clearing goals" });
-  }
-}
+// async function clearGoals(req, res) {
+//   try {
+//     await Goal.deleteMany({});
+//     res.status(200).json({ message: "All goals cleared successfully" });
+//   } catch (err) {
+//     console.error("Error clearing goals:", err);
+//     res.status(500).json({ message: "Error clearing goals" });
+//   }
+// }
 
 // reward logic goes here
 
-module.exports = { sendDailyNoti, sendWeeklyNoti, createGoal, clearGoals };
+module.exports = { sendDailyNoti, sendWeeklyNoti };

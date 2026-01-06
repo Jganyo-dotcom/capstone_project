@@ -13,15 +13,17 @@ function showMessage(el, msg, type = "success") {
 }
 
 // ---------------- AUTH ----------------
-async function registerUser() {
-  const name = document.getElementById("name").value.trim();
-  const username = document.getElementById("username").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const password = document.getElementById("password").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const status = document.getElementById("authStatus");
+async function registerUser(e) {
+  e.preventDefault(); // prevent accidental form submission
 
-  if (!name || !username || !phone || !password) {
+  const name = document.getElementById("regName").value.trim();
+  const username = document.getElementById("regUsername").value.trim();
+  const email = document.getElementById("regEmail").value.trim().toLowerCase();
+  const phone = document.getElementById("regPhone").value.trim();
+  const password = document.getElementById("regPassword").value.trim();
+  const status = document.getElementById("registerStatus");
+
+  if (!name || !username || !phone || !password || !email) {
     return showMessage(status, "All fields are required", "error");
   }
 
@@ -43,12 +45,12 @@ async function registerUser() {
 }
 
 async function loginUser() {
-  const main = document.getElementById("username").value.trim();
-  const password = document.getElementById("password").value.trim();
-  const status = document.getElementById("authStatus");
+  const main = document.getElementById("loginMain").value.trim(); // ✅ email or username
+  const password = document.getElementById("loginPassword").value.trim();
+  const status = document.getElementById("loginStatus");
 
-  if (!username || !password) {
-    return showMessage(status, "Username and password required", "error");
+  if (!main || !password) {
+    return showMessage(status, "Email/Username and password required", "error");
   }
 
   showLoader(status);
@@ -61,8 +63,7 @@ async function loginUser() {
     const data = await res.json();
 
     if (res.ok && data.token) {
-      token = data.token;
-      localStorage.setItem("token", token);
+      localStorage.setItem("token", data.token);
       vapidPublicKey = data.vapidPublicKey;
       showMessage(status, "Login successful", "success");
 
@@ -75,6 +76,25 @@ async function loginUser() {
     showMessage(status, "Network error", "error");
   }
 }
+
+const loginSection = document.getElementById("loginSection");
+const registerSection = document.getElementById("registerSection");
+
+document.getElementById("showRegister").addEventListener("click", (e) => {
+  e.preventDefault();
+  loginSection.classList.add("hidden");
+  registerSection.classList.remove("hidden");
+});
+
+document.getElementById("showLogin").addEventListener("click", (e) => {
+  e.preventDefault();
+  registerSection.classList.add("hidden");
+  loginSection.classList.remove("hidden");
+});
+
+// Attach events
+document.getElementById("registerBtn").addEventListener("click", registerUser);
+document.getElementById("loginBtn").addEventListener("click", loginUser);
 
 // ---------------- DYNAMIC STEPS ----------------
 const stepsContainer = document.getElementById("stepsContainer");
@@ -118,7 +138,7 @@ async function createGoal() {
       return;
     }
 
-    const res = await fetch("/student/goals", {
+    const res = await fetch("/student/create/goals", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -224,8 +244,8 @@ document.getElementById("testPushBtn").onclick = async () => {
       );
     }
 
-    const res = await fetch("/student/notify-me-daily", {
-      method: "POST",
+    const res = await fetch("/student/create/goals", {
+      method: "DELETE",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -235,7 +255,7 @@ document.getElementById("testPushBtn").onclick = async () => {
 
     const data = await res.json();
     res.ok
-      ? showMessage(status, "Test push sent", "success")
+      ? showMessage(status, data.message, "success")
       : showMessage(status, data.error || data.message, "error");
   } catch {
     showMessage(status, "Network error", "error");
@@ -243,7 +263,6 @@ document.getElementById("testPushBtn").onclick = async () => {
 };
 
 // ---------------- EVENT BINDINGS ----------------
-document.getElementById("registerBtn").onclick = registerUser;
 document.getElementById("loginBtn").onclick = loginUser;
 document.getElementById("createGoalBtn").onclick = createGoal;
 document.getElementById("attachSubBtn").onclick = attachSubscription;

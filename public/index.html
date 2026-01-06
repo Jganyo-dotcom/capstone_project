@@ -91,6 +91,9 @@
           transform: rotate(360deg);
         }
       }
+      .hidden {
+        display: none;
+      }
     </style>
   </head>
   <body>
@@ -98,30 +101,55 @@
       <h1>Goal Tracker</h1>
 
       <!-- Auth Section -->
-      <section class="auth">
-        <h2>Authentication</h2>
-        <div class="row">
-          <input id="name" type="text" placeholder="Full Name" />
-          <input id="username" type="text" placeholder="Username" />
-          <input id="email" type="text" placeholder="Username" />
-        </div>
-        <div class="row">
-          <input id="phone" type="tel" placeholder="Phone Number" />
-          <input id="password" type="password" placeholder="Password" />
-        </div>
-        <div class="row">
-          <button id="registerBtn">Register</button>
-          <button id="loginBtn">Login</button>
-        </div>
-        <p id="authStatus"></p>
-      </section>
+      <div class="container">
+        <h1>Authentication</h1>
+
+        <!-- Login Section -->
+        <section id="loginSection">
+          <h2>Login</h2>
+          <div class="row">
+            <input id="loginMain" type="text" placeholder="Email or Username" />
+            <input id="loginPassword" type="password" placeholder="Password" />
+          </div>
+          <div class="row">
+            <button id="loginBtn">Login</button>
+          </div>
+          <p id="loginStatus"></p>
+          <p>
+            Don’t have an account?
+            <a href="#" id="showRegister">Register here</a>
+          </p>
+        </section>
+
+        <!-- Register Section (hidden by default) -->
+        <section id="registerSection" class="hidden">
+          <h2>Register</h2>
+          <div class="row">
+            <input id="regName" type="text" placeholder="Full Name" />
+            <input id="regUsername" type="text" placeholder="Username" />
+            <input id="regEmail" type="text" placeholder="Email" />
+          </div>
+          <div class="row">
+            <input id="regPhone" type="tel" placeholder="Phone Number" />
+            <input id="regPassword" type="password" placeholder="Password" />
+          </div>
+          <div class="row">
+            <button id="registerBtn">Register</button>
+          </div>
+          <p id="registerStatus"></p>
+          <p>
+            Already have an account?
+            <a href="#" id="showLogin">Login here</a>
+          </p>
+        </section>
+      </div>
 
       <!-- Push Section -->
       <section class="push">
         <h2>Push Notifications</h2>
         <div class="row">
           <button id="subscribeBtn">Subscribe</button>
-          <button id="testPushBtn">Send Test Push</button>
+          <button id="testPushBtn">clear goals</button>
         </div>
         <p id="pushStatus"></p>
       </section>
