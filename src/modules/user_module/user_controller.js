@@ -111,7 +111,7 @@ const LoginUser = async (req, res) => {
       message: "login was successful",
       safe_user,
       token,
-      vapidPublicKey: process.env.publicKey,
+      vapidPublicKey: process.env.PUBLIC_KEY,
     });
   } catch (err) {
     console.log(err);

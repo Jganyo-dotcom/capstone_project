@@ -4,8 +4,8 @@ const {
   sendWeeklyNoti,
 } = require("../modules/notification & reward module/noti_validation");
 
-// Every 10 minutes
-cron.schedule("*/10 * * * *", () => {
+// Every 5 minutes
+cron.schedule("*/5 * * * *", () => {
   console.log("Running notification job...");
   sendDailyNoti();
 });
