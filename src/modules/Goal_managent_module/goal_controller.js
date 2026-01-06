@@ -153,8 +153,37 @@ const toggleGoalStatus = async (req, res, next) => {
 
 const getGoals = async (req, res, next) => {
   try {
-    const goals = await GoalModel.find({ user: req.user });
-    res.json(goals);
+    const goals = await GoalModel.find({
+      user: req.user.id,
+    }).sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      message: "Goals fetch successfully",
+      data: goals,
+    });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+};
+
+const getGoalById = async (req, res, next) => {
+  try {
+    const goal = await GoalModel.findOne({
+      _id: req.params.goalId,
+      user: req.user.id,
+    });
+
+    if (!goal) {
+      return res.status(404).json({
+        message: "Goal not found",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Goals retrieved successfully",
+      data: goal,
+    });
   } catch (error) {
     console.error(error);
     next(error);
@@ -240,6 +269,7 @@ module.exports = {
   updateGoalDetails,
   toggleGoalStatus,
   getGoals,
+  getGoalById,
   deleteGoal,
   deleteStep,
   clearGoals,

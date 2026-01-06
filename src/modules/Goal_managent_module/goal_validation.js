@@ -14,7 +14,7 @@ const createGoalSchema = Joi.object({
     })
 });
 
-const validateGoal = (req,res,next) => {
+const validateCreateGoal = (req,res,next) => {
     console.log(req.body);
     const {error} = createGoalSchema.validate(req.body);
 
@@ -26,6 +26,38 @@ const validateGoal = (req,res,next) => {
 
     next();
 };
+
+const updateGoalDetailsSchema = Joi.object({
+    title: Joi.string().trim().min(5).max(200).optional(),
+    startDate: Joi.date().optional(),
+    endDate: Joi.date().optional()
+})
+    .min(1).custom((value, helpers) => {
+        const { startDate, endDate } = value;
+
+        if (startDate && endDate && endDate <= startDate) {
+            return helpers.error('any.invalid');
+        }
+
+        return value;
+    })
+    .messages({
+        'any.invalid': 'End date must be after start date'
+    });
+
+const validateUpdateGoalDetails = (req,res,next) => {
+    console.log(req.body);
+    const {error} = updateGoalDetailsSchema.validate(req.body);
+
+    if (error) {
+        return res.status(400).json({
+            error: error.details[0].message,
+        });
+    }
+
+    next();
+};
+
 
 const addStepSchema = Joi.object({
     content: Joi.string().trim().min(3).max(500).required()
@@ -58,7 +90,7 @@ const updateGoalSchema = Joi.object({
     })
 });
 
-const validateUpdateGoal = (req,res,next) => {
+const validateUpdateGoalStatus = (req,res,next) => {
     console.log(req.body);
     const {error} = updateGoalSchema.validate(req.body);
 
@@ -90,8 +122,9 @@ const validateUpdateStep = (req,res,next) => {
 
 
 module.exports = {
-    validateGoal,
+    validateCreateGoal,
+    validateUpdateGoalDetails,
     validateStep,
-    validateUpdateGoal,
+    validateUpdateGoalStatus,
     validateUpdateStep
-}
+};
