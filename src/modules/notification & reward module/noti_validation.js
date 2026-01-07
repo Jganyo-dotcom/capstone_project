@@ -59,7 +59,7 @@ async function sendDailyNoti() {
       ) {
         const payload = JSON.stringify({
           title: "Daily Step reminder",
-          body: `Your step "${step.name}" is waiting to be completed`,
+          body: `Your step "${step.name}" is waiting to be completed, This is the backend progress so far`,
           data: { url: `${baseUrl}/steps/${step._id}` },
         });
 
