@@ -10,19 +10,19 @@ const {
 //   sendDailyNoti();
 // });
 
-// // Every 15 minutes
-// cron.schedule("*/15 * * * *", () => {
-//   console.log("Running notification job...");
-//   sendDailyNoti();
-// });
-
-// Every Sunday at midnight
-cron.schedule("0 0 * * 0", () => {
-  console.log("Running weekly notification job...");
-  sendWeeklyNoti();
-});
-// Every hour at minute 0
-cron.schedule("0 * * * *", () => {
+// Every 15 minutes
+cron.schedule("*/14 * * * *", () => {
   console.log("Running notification job...");
   sendDailyNoti();
 });
+
+// Every Sunday at midnight
+cron.schedule("*/15 * * * *", () => {
+  console.log("Running weekly notification job...");
+  sendWeeklyNoti();
+});
+// // Every hour at minute 0
+// cron.schedule("0 * * * *", () => {
+//   console.log("Running notification job...");
+//   sendDailyNoti();
+// });

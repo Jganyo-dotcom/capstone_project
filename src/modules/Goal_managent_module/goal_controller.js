@@ -254,7 +254,6 @@ const deleteStep = async (req, res, next) => {
 async function clearGoals(req, res) {
   try {
     await GoalModel.deleteMany({});
-    await UserModel.deleteMany({});
     res.status(200).json({ message: "All goals cleared successfully" });
   } catch (err) {
     console.error("Error clearing goals:", err);
