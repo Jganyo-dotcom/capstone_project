@@ -7,16 +7,19 @@ const StreakSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    currentStreakDays: { type: Number, default: 0 },
-    longestStreakDays: { type: Number, default: 0 },
+    goal: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Goal",
+      required: true,
+    },
+
+    currentStreak: { type: Number, default: 0 },
+    longestStreak: { type: Number, default: 0 },
     lastActiveDate: { type: Date, default: null },
-    history: [
-      {
-        startDate: { type: Date },
-        endDate: { type: Date },
-        length: { type: Number },
-      },
-    ],
+    startDate: { type: Date },
+    endDate: { type: Date },
+    completedDates: { type: [Date], default: [] },
+    completedWeeks: { type: [Date], default: [] },
   },
   { timestamps: true }
 );

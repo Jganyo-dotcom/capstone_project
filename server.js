@@ -6,6 +6,7 @@ const registerRoute = require("./src/modules/user_module/user_route");
 const path = require("path");
 const notiRoute = require("./src/modules/notification & reward module/noti_route");
 const CreateRoute = require("./src/modules/Goal_managent_module/student_goal_route");
+const streakRoute = require("./src/modules/streak_engine_module/admin_route");
 require("./src/shared models/cron");
 
 app.use(express.json());
@@ -17,6 +18,7 @@ app.get("/", async (req, res) => {
 
 app.use("/student", registerRoute);
 app.use("/student/create", CreateRoute);
+app.use("/student", streakRoute);
 
 app.listen(port, () => {
   console.log(`server is running on ${port}`);

@@ -16,7 +16,6 @@ const stepSchema = new mongoose.Schema({
   },
   subscription: {
     type: Object,
-    required: true,
   },
   completed: {
     type: Boolean,

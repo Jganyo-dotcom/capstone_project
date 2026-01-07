@@ -82,6 +82,10 @@ async function loginUser() {
       showMessage(status, "Login successful", "success");
       document.getElementById("goalSection").classList.remove("hidden");
       document.getElementById("attachSection")?.classList.remove("hidden");
+      // Call showGoalsUI when login succeeds (add this line to your loginUser success block)
+      document.getElementById("goalSection").classList.remove("hidden");
+      document.getElementById("attachSection")?.classList.remove("hidden");
+      showGoalsUI();
     } else {
       showMessage(status, data.error || data.message, "error");
     }
@@ -258,3 +262,330 @@ document.getElementById("testPushBtn").onclick = async () => {
 document.getElementById("registerBtn").onclick = registerUser;
 document.getElementById("loginBtn").onclick = loginUser;
 document.getElementById("createGoalBtn").onclick = createGoal;
+// ---------------- GOALS LIST & PAGINATION ----------------
+// ---------------- GOALS LIST & PAGINATION ----------------
+
+let currentPage = 1;
+let totalPages = 1;
+
+async function fetchGoals(page = 1, limit = 10) {
+  const status = document.getElementById("goalsStatus");
+  showLoader(status, "Loading goals");
+
+  try {
+    const res = await fetch(
+      `/student/create/goals?page=${page}&limit=${limit}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    const data = await res.json();
+
+    if (!res.ok) {
+      showMessage(
+        status,
+        data.error || data.message || "Failed to load goals",
+        "error"
+      );
+      return { goals: [], page: 1, pages: 1, total: 0 };
+    }
+
+    showMessage(status, `Loaded ${data.goals.length} goals`, "success");
+    return {
+      goals: data.goals,
+      page: data.page,
+      pages: data.pages,
+      total: data.total,
+    };
+  } catch {
+    showMessage(status, "Network error", "error");
+    return { goals: [], page: 1, pages: 1, total: 0 };
+  }
+}
+
+function renderGoals(goals, page, pages) {
+  const container = document.getElementById("goalsList");
+  const pageInfo = document.getElementById("pageInfo");
+  container.innerHTML = "";
+
+  if (!goals.length) {
+    container.innerHTML = `<p class="error">No goals found</p>`;
+  }
+
+  goals.forEach((goal) => {
+    const card = document.createElement("div");
+    card.className = "goal-card";
+
+    const header = document.createElement("div");
+    header.className = "goal-header";
+
+    const title = document.createElement("h3");
+    title.textContent = goal.title;
+
+    const info = document.createElement("span");
+    info.className = "meta";
+    const start = goal.startDate
+      ? new Date(goal.startDate).toLocaleDateString()
+      : "-";
+    const end = goal.endDate
+      ? new Date(goal.endDate).toLocaleDateString()
+      : "-";
+    info.textContent = `Start: ${start} • End: ${end} • Status: ${
+      goal.status || "active"
+    }`;
+
+    // Add View Streak button
+    const streakBtn = document.createElement("button");
+    streakBtn.textContent = "View Streak";
+    streakBtn.onclick = () => loadStreak(goal._id);
+
+    header.appendChild(title);
+    header.appendChild(info);
+    header.appendChild(streakBtn);
+
+    const stepsWrap = document.createElement("div");
+    stepsWrap.className = "steps-list";
+
+    if (Array.isArray(goal.steps) && goal.steps.length) {
+      goal.steps.forEach((step) => {
+        const row = document.createElement("div");
+        row.className = "step-row";
+
+        const left = document.createElement("div");
+        left.innerHTML = `<strong>${step.name}</strong><div class="meta">Frequency: ${step.frequency} • Index: ${step.index}</div>`;
+
+        const btn = document.createElement("button");
+        btn.textContent = step.completed ? "Done" : "Mark Done";
+        btn.disabled = !!step.completed;
+
+        btn.onclick = async () => {
+          await markStepDone(goal._id, step.index);
+        };
+
+        row.appendChild(left);
+        row.appendChild(btn);
+        stepsWrap.appendChild(row);
+      });
+    } else {
+      stepsWrap.innerHTML = `<p class="error">No steps for this goal</p>`;
+    }
+
+    card.appendChild(header);
+    card.appendChild(stepsWrap);
+    container.appendChild(card);
+  });
+
+  currentPage = page;
+  totalPages = pages;
+  pageInfo.textContent = `Page ${page} of ${pages}`;
+  document.getElementById("prevPageBtn").disabled = page <= 1;
+  document.getElementById("nextPageBtn").disabled = page >= pages;
+}
+
+async function loadGoals() {
+  const limit = Number(document.getElementById("goalsPageSize").value || 10);
+  const { goals, page, pages } = await fetchGoals(currentPage, limit);
+  renderGoals(goals, page, pages);
+}
+
+async function markStepDone(goalId, stepIndex) {
+  const status = document.getElementById("goalsStatus");
+  showLoader(status, "Submitting step");
+
+  try {
+    const res = await fetch(`/student/goal/${goalId}/step/${stepIndex}/done`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      // backend resolves user from token
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return showMessage(
+        status,
+        data.error || data.message || "Failed to submit step",
+        "error"
+      );
+    }
+
+    showMessage(status, "Step ticked and streak updated", "success");
+    await loadGoals();
+  } catch {
+    showMessage(status, "Network error", "error");
+  }
+}
+
+// ---------------- BINDINGS & LOGIN HOOK ----------------
+
+function showGoalsUI() {
+  document.getElementById("goalsListSection").classList.remove("hidden");
+  loadGoals();
+}
+
+document.getElementById("refreshGoalsBtn").onclick = loadGoals;
+document.getElementById("goalsPageSize").onchange = () => {
+  currentPage = 1;
+  loadGoals();
+};
+document.getElementById("prevPageBtn").onclick = () => {
+  if (currentPage > 1) {
+    currentPage -= 1;
+    loadGoals();
+  }
+};
+document.getElementById("nextPageBtn").onclick = () => {
+  if (currentPage < totalPages) {
+    currentPage += 1;
+    loadGoals();
+  }
+};
+
+// ---------------- STREAK LOGIC ----------------
+
+async function loadStreak(goalId) {
+  const status = document.getElementById("streakStatus");
+  showLoader(status, "Loading streak");
+
+  try {
+    const res = await fetch(`/student/streaks/ALL/${goalId}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      return showMessage(status, data.error || data.message, "error");
+    }
+
+    document.getElementById("streakCounts").innerHTML = `
+      <p>Current Streak: <strong>${data.currentStreak}</strong></p>
+      <p>Longest Streak: <strong>${data.longestStreak}</strong></p>
+    `;
+
+    renderCalendar(data.completedDates, data.completedWeeks);
+    showMessage(status, "Streak loaded", "success");
+
+    // Show modal
+    document.getElementById("streakModal").classList.remove("hidden");
+  } catch {
+    showMessage(status, "Network error", "error");
+  }
+}
+
+// Close modal handler
+document.getElementById("closeStreakModal").onclick = () => {
+  document.getElementById("streakModal").classList.add("hidden");
+};
+
+// Optional: close modal when clicking outside content
+window.onclick = (event) => {
+  const modal = document.getElementById("streakModal");
+  if (event.target === modal) {
+    modal.classList.add("hidden");
+  }
+};
+
+// Track current view
+let currentYear = new Date().getFullYear();
+let currentMonth = new Date().getMonth();
+
+function renderCalendar(completedDates, completedWeeks) {
+  const grid = document.getElementById("calendarGrid");
+  grid.innerHTML = "";
+
+  const firstDay = new Date(currentYear, currentMonth, 1);
+  const lastDay = new Date(currentYear, currentMonth + 1, 0);
+  const daysInMonth = lastDay.getDate();
+
+  // Normalize sets
+  const completedSet = new Set(
+    completedDates.map((d) => new Date(d).toDateString())
+  );
+  const weekSet = new Set(completedWeeks);
+
+  // Add month header with navigation
+  const headerRow = document.createElement("div");
+  headerRow.className = "calendar-nav";
+  headerRow.innerHTML = `
+    <button id="prevMonth">&lt;</button>
+    <span>${firstDay.toLocaleString("default", {
+      month: "long",
+    })} ${currentYear}</span>
+    <button id="nextMonth">&gt;</button>
+  `;
+  grid.appendChild(headerRow);
+
+  // Weekday headers
+  const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  weekdays.forEach((day) => {
+    const headerCell = document.createElement("div");
+    headerCell.textContent = day;
+    headerCell.className = "calendar-header";
+    grid.appendChild(headerCell);
+  });
+
+  // Offset for first day (make Monday=1)
+  let startOffset = firstDay.getDay();
+  if (startOffset === 0) startOffset = 7;
+  for (let i = 1; i < startOffset; i++) {
+    const emptyCell = document.createElement("div");
+    grid.appendChild(emptyCell);
+  }
+
+  // Render each day
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(currentYear, currentMonth, day);
+    const cell = document.createElement("div");
+    cell.className = "calendar-day";
+    cell.textContent = day;
+
+    const dateStr = date.toDateString();
+    const weekKey = getWeekStart(date).getTime(); // canonical Monday of this week
+
+    if (completedSet.has(dateStr)) {
+      cell.classList.add("completed"); // daily completion
+    } else if (weekSet.has(weekKey)) {
+      cell.classList.add("completed"); // weekly completion
+    } else {
+      cell.classList.add("missed"); // not completed
+    }
+
+    grid.appendChild(cell);
+  }
+
+  // Bind navigation buttons
+  document.getElementById("prevMonth").onclick = () => {
+    currentMonth--;
+    if (currentMonth < 0) {
+      currentMonth = 11;
+      currentYear--;
+    }
+    renderCalendar(completedDates, completedWeeks);
+  };
+
+  document.getElementById("nextMonth").onclick = () => {
+    currentMonth++;
+    if (currentMonth > 11) {
+      currentMonth = 0;
+      currentYear++;
+    }
+    renderCalendar(completedDates, completedWeeks);
+  };
+}
+
+// Helper to generate week key
+function getWeekStart(date) {
+  const d = new Date(date);
+  d.setUTCHours(0, 0, 0, 0);
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() - dayNum + 1);
+  return d;
+}

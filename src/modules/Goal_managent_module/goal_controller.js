@@ -2,6 +2,7 @@ const Joi = require("joi");
 const GoalModel = require("../Goal_managent_module/goal_model.js");
 const UserModel = require("../../shared models/User_model.js");
 const wp = require("web-push");
+const streak_model = require("../../shared models/streak_model.js");
 wp.setVapidDetails(
   "mailto:elikemejay@gmail.com",
   process.env.PUBLIC_KEY,
@@ -23,6 +24,12 @@ const createGoal = async (req, res, next) => {
     });
 
     await newGoal.save();
+    const goal_streak = new streak_model({
+      userId: req.user.id,
+      goal: newGoal._id,
+    });
+
+    await goal_streak.save();
 
     return res.status(200).json({
       message: "Goal added susccessfully",
@@ -153,16 +160,24 @@ const toggleGoalStatus = async (req, res, next) => {
 
 const getGoals = async (req, res, next) => {
   try {
-    const goals = await GoalModel.find({
-      user: req.user.id,
-    }).sort({ createdAt: -1 });
-
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.max(parseInt(req.query.limit) || 10, 1);
+    const filter = { user: req.user.id };
+    const total = await GoalModel.countDocuments(filter);
+    const goals = await GoalModel.find(filter)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
     return res.status(200).json({
-      message: "Goals fetch successfully",
-      data: goals,
+      message: "Goals fetched successfully",
+      page,
+      pages: Math.max(Math.ceil(total / limit), 1),
+      total,
+      goals,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching goals:", error);
     next(error);
   }
 };
