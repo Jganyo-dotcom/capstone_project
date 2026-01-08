@@ -33,7 +33,7 @@ async function registerUser(e) {
   const status = document.getElementById("registerStatus");
 
   if (!name || !username || !phone || !password || !email) {
-    return showMessage(status, "All fields are required", "error");
+    return showMessage(status, "provide info for all fields", "error");
   }
 
   showLoader(status);
@@ -46,8 +46,13 @@ async function registerUser(e) {
     const data = await res.json();
 
     res.ok
-      ? showMessage(status, "Registration successful", "success")
+      ? showMessage(status, data.message, "success")
       : showMessage(status, data.error || data.message, "error");
+    document.getElementById("regName").value = "";
+    document.getElementById("regUsername").value = "";
+    document.getElementById("regEmail").value = "";
+    document.getElementById("regPhone").value = "";
+    document.getElementById("regPassword").value = "";
   } catch {
     showMessage(status, "Network error", "error");
   }
@@ -79,12 +84,14 @@ async function loginUser() {
         localStorage.setItem("vapidPublicKey", vapidPublicKey);
       }
 
-      showMessage(status, "Login successful", "success");
+      showMessage(status, data.message, "success");
       document.getElementById("goalSection").classList.remove("hidden");
       document.getElementById("attachSection")?.classList.remove("hidden");
       // Call showGoalsUI when login succeeds (add this line to your loginUser success block)
       document.getElementById("goalSection").classList.remove("hidden");
       document.getElementById("attachSection")?.classList.remove("hidden");
+      document.getElementById("loginMain").value = "";
+      document.getElementById("loginPassword").value = "";
       showGoalsUI();
     } else {
       showMessage(status, data.error || data.message, "error");
@@ -169,9 +176,16 @@ async function createGoal() {
     });
 
     const data = await res.json();
-    res.ok
-      ? showMessage(status, "Goal created successfully", "success")
-      : showMessage(status, data.error || data.message, "error");
+
+    if (res.ok) {
+      showMessage(status, "Goal created successfully", "success");
+      document.getElementById("goalTitle").value = "";
+      document.querySelectorAll(".stepInput").forEach((e) => {
+        e.value = "";
+      });
+    } else {
+      showMessage(status, data.error || data.message, "error");
+    }
   } catch {
     showMessage(status, "Network error", "error");
   }
@@ -250,11 +264,12 @@ document.getElementById("testPushBtn").onclick = async () => {
     });
 
     const data = await res.json();
+    loadGoals();
     res.ok
       ? showMessage(status, data.message, "success")
-      : showMessage(status, data.error || data.message, "error");
+      : showMessage(status, data.message, "error");
   } catch {
-    showMessage(status, "Network error", "error");
+    showMessage(status, data.message, "error");
   }
 };
 
@@ -285,11 +300,7 @@ async function fetchGoals(page = 1, limit = 10) {
     const data = await res.json();
 
     if (!res.ok) {
-      showMessage(
-        status,
-        data.error || data.message || "Failed to load goals",
-        "error"
-      );
+      showMessage(status, data.message || "Failed to load goals", "error");
       return { goals: [], page: 1, pages: 1, total: 0 };
     }
 
@@ -301,7 +312,7 @@ async function fetchGoals(page = 1, limit = 10) {
       total: data.total,
     };
   } catch {
-    showMessage(status, "Network error", "error");
+    showMessage(status, "contact admin if this persists", "error");
     return { goals: [], page: 1, pages: 1, total: 0 };
   }
 }
@@ -409,7 +420,7 @@ async function markStepDone(goalId, stepIndex) {
     if (!res.ok) {
       return showMessage(
         status,
-        data.error || data.message || "Failed to submit step",
+        data.message || "Failed to submit step",
         "error"
       );
     }
@@ -417,7 +428,7 @@ async function markStepDone(goalId, stepIndex) {
     showMessage(status, "Step ticked and streak updated", "success");
     await loadGoals();
   } catch {
-    showMessage(status, "Network error", "error");
+    showMessage(status, data.message, "error");
   }
 }
 
@@ -462,7 +473,7 @@ async function loadStreak(goalId) {
     const data = await res.json();
 
     if (!res.ok) {
-      return showMessage(status, data.error || data.message, "error");
+      return showMessage(status, data.message, "error");
     }
 
     document.getElementById("streakCounts").innerHTML = `

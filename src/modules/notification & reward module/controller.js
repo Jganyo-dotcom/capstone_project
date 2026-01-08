@@ -1,6 +1,7 @@
 const notiSchema = require("../../shared models/notification_model");
 const wp = require("web-push");
-const Goal = require("../../modules/Goal_managent_module/goal_model"); // adjust path
+const Goal = require("../../shared models/goal_model"); // adjust path
+const reward_model = require("../../shared models/reward_model");
 wp.setVapidDetails(
   "mailto:elikemejay@gmail.com",
   process.env.PUBLIC_KEY,

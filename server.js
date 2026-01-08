@@ -6,7 +6,7 @@ const registerRoute = require("./src/modules/user_module/user_route");
 const path = require("path");
 const notiRoute = require("./src/modules/notification & reward module/noti_route");
 const CreateRoute = require("./src/modules/Goal_managent_module/student_goal_route");
-const streakRoute = require("./src/modules/streak_engine_module/admin_route");
+const streakRoute = require("./src/modules/streak_engine_module/student_route");
 require("./src/shared models/cron");
 
 app.use(express.json());

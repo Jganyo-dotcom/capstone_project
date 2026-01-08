@@ -1,5 +1,6 @@
+const reward_model = require("../../shared models/reward_model");
 const streak_model = require("../../shared models/streak_model");
-const Goal = require("../Goal_managent_module/goal_model");
+const Goal = require("../../shared models/goal_model");
 const mongoose = require("mongoose");
 
 // Helper: difference in whole days between two dates
@@ -97,6 +98,7 @@ async function updateStreak(req, res) {
     streak.longestStreak = Math.max(streak.longestStreak, streak.currentStreak);
 
     await streak.save();
+    const unlockedRewards = await checkRewards(userId);
 
     return res.json({
       message: "Step ticked and streak updated",
@@ -108,6 +110,7 @@ async function updateStreak(req, res) {
       endDate: streak.endDate,
       completedDates: streak.completedDates,
       completedWeeks: streak.completedWeeks,
+      unlockedRewards,
     });
   } catch (err) {
     console.error("Error updating streak:", err);
@@ -170,5 +173,54 @@ const getStreaks = async (req, res, next) => {
     next(error);
   }
 };
+
+async function checkRewards(userId) {
+  const streaks = await streak_model.find({ userId });
+  const rewards = await reward_model.find({ userId });
+  const goalsCompleted = await Goal.countDocuments({
+    userId,
+    status: "completed",
+  });
+
+  const longest = Math.max(...streaks.map((s) => s.longestStreak), 0);
+
+  for (let reward of rewards) {
+    if (!reward.unlocked) {
+      let unlock = false;
+
+      // Continuous streak badge (basic streak length)
+      if (
+        reward.criteria.streakLength &&
+        longest >= reward.criteria.streakLength
+      ) {
+        unlock = true;
+      }
+
+      // ✅ No breaks badge (continuous streak without endDate)
+      if (reward.criteria.noBreaks) {
+        const continuous = streaks.some(
+          (s) => !s.endDate && s.currentStreak >= reward.criteria.streakLength
+        );
+        if (continuous) unlock = true;
+      }
+
+      // Multiple goals medal
+      if (
+        reward.criteria.goalsCompleted &&
+        goalsCompleted >= reward.criteria.goalsCompleted
+      ) {
+        unlock = true;
+      }
+
+      if (unlock) {
+        reward.unlocked = true;
+        reward.unlockedAt = new Date();
+        await reward.save();
+      }
+    }
+  }
+
+  return rewards.filter((r) => r.unlocked);
+}
 
 module.exports = { updateStreak, getStreaks };

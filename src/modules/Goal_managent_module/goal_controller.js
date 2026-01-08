@@ -1,5 +1,5 @@
 const Joi = require("joi");
-const GoalModel = require("../Goal_managent_module/goal_model.js");
+const GoalModel = require("../../shared models/goal_model.js");
 const UserModel = require("../../shared models/User_model.js");
 const wp = require("web-push");
 const streak_model = require("../../shared models/streak_model.js");
