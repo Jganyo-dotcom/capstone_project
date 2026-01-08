@@ -3,374 +3,224 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Goal Tracker with Push</title>
+    <title>FocuSet</title>
     <style>
+      :root {
+        --bg-dark: #0f172a;
+        --bg-card: #1e293b;
+        --bg-accent: #2563eb;
+        --text-light: #f1f5f9;
+        --text-muted: #94a3b8;
+        --success: #10b981;
+        --error: #ef4444;
+      }
+      body {
+        font-family: "Inter", system-ui, sans-serif;
+        background: var(--bg-dark);
+        color: var(--text-light);
+        margin: 0;
+        padding: 0;
+        line-height: 1.6;
+      }
+      #registerSection.hidden {
+        display: none;
+      }
+      .container {
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 24px;
+        background: var(--bg-card);
+        border-radius: 12px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      }
+      h1,
+      h2,
+      h3 {
+        margin-bottom: 12px;
+        font-weight: 600;
+        color: var(--text-light);
+      }
+      section {
+        margin-top: 24px;
+        padding-top: 16px;
+        border-top: 1px solid #334155;
+      }
+      .row {
+        display: flex;
+        gap: 12px;
+        margin: 12px 0;
+        flex-wrap: wrap;
+      }
+      input,
+      select,
+      button {
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid #334155;
+        background: #0f172a;
+        color: var(--text-light);
+        flex: 1;
+        transition: all 0.2s ease;
+      }
+      input:focus,
+      select:focus {
+        outline: none;
+        border-color: var(--bg-accent);
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.4);
+      }
+      button {
+        cursor: pointer;
+        background: var(--bg-accent);
+        border: none;
+        font-weight: 600;
+      }
+      button:hover {
+        background: #1d4ed8;
+        transform: translateY(-1px);
+      }
+      p {
+        color: var(--text-muted);
+        margin: 6px 0;
+      }
+      .success {
+        color: var(--success);
+      }
+      .error {
+        color: var(--error);
+      } /* Calendar */
       .calendar {
         display: grid;
         grid-template-columns: repeat(7, 1fr);
         gap: 6px;
         margin-top: 12px;
-        text-align: center;
       }
-
-      .calendar-header {
-        font-weight: bold;
-        color: #93c5fd;
-      }
-
       .calendar-day {
         padding: 10px;
         border-radius: 6px;
+        text-align: center;
+        background: #334155;
+        color: var(--text-light);
         font-size: 12px;
-        background: #1f2937;
-        color: #e5e7eb;
+        transition: background 0.3s ease;
       }
-
       .calendar-day.completed {
-        background: #10b981; /* green */
+        background: var(--success);
         color: #fff;
       }
-
-      .calendar-nav {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 8px;
-        grid-column: span 7; /* span across all columns */
-      }
-
-      .calendar-nav button {
-        background: #1f2937;
-        color: #fff;
-        border: none;
-        padding: 4px 8px;
-        cursor: pointer;
-        border-radius: 4px;
-      }
-
-      .calendar-nav span {
-        font-weight: bold;
-        color: #93c5fd;
-      }
-
       .calendar-day.missed {
-        background: #ef4444; /* red */
+        background: var(--error);
         color: #fff;
       }
-
-      /* Modal overlay */
+      .calendar-week.completed {
+        background: var(--bg-accent);
+        color: #fff;
+      } /* Modal */
       .modal {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(15, 23, 42, 0.85); /* dark semi-transparent */
+        inset: 0;
+        background: rgba(15, 23, 42, 0.85);
         display: flex;
         justify-content: center;
         align-items: center;
         z-index: 999;
       }
-
-      /* Hide by default */
+      .hidden {
+        display: none;
+      }
       .modal.hidden {
         display: none;
       }
-
-      /* Modal content box */
       .modal-content {
-        background: #111827;
-        padding: 20px;
+        background: var(--bg-card);
+        padding: 24px;
         border-radius: 12px;
         max-width: 600px;
         width: 90%;
-        color: #e5e7eb;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+        animation: fadeIn 0.3s ease;
       }
-
-      /* Close button */
       .close {
         float: right;
         font-size: 24px;
         cursor: pointer;
-        color: #ef4444;
+        color: var(--error);
       }
-
-      /* Responsive tweaks */
-      @media (max-width: 480px) {
-        .modal-content {
-          width: 95%;
-          padding: 12px;
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: scale(0.95);
         }
-        h2 {
-          font-size: 1.2rem;
+        to {
+          opacity: 1;
+          transform: scale(1);
         }
-      }
-
-      /* Goal cards */
+      } /* Goal cards */
       .goal-card {
         background: #0b1220;
-        border: 1px solid #374151;
+        border: 1px solid #334155;
         border-radius: 10px;
-        padding: 12px;
+        padding: 16px;
         margin: 12px 0;
+        transition: transform 0.2s ease;
       }
-
-      /* Responsive adjustments */
-      @media (max-width: 768px) {
-        .goal-header {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 6px;
-        }
-        .step-row {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 6px;
-        }
-        .step-row button,
-        .goal-header button {
-          width: 100%;
-          margin-top: 6px;
-        }
+      .goal-card:hover {
+        transform: translateY(-2px);
       }
-
-      @media (max-width: 480px) {
-        h2,
-        h3 {
-          font-size: 1rem;
-        }
-        .goal-card {
-          padding: 8px;
-        }
-        .goal-header .meta,
-        .step-row .meta {
-          font-size: 11px;
-          line-height: 1.4;
-        }
-      }
-      .calendar {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 6px;
-        margin-top: 12px;
-      }
-
-      .calendar-day {
-        padding: 10px;
-        border-radius: 6px;
-        text-align: center;
-        background: #1f2937;
-        color: #e5e7eb;
-        font-size: 12px;
-      }
-
-      .calendar-day.completed {
-        background: #10b981; /* green for daily */
-        color: #fff;
-      }
-
-      .calendar-week.completed {
-        background: #2563eb; /* blue for weekly */
-        color: #fff;
-      }
-
-      /* For tablets and smaller screens */
-      @media (max-width: 768px) {
-        .goal-card {
-          padding: 10px;
-          margin: 10px 0;
-        }
-
-        .goal-header {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 6px;
-        }
-
-        .steps-list {
-          margin-top: 8px;
-        }
-
-        .step-row {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 6px;
-        }
-
-        .step-row button {
-          width: 100%;
-          margin-top: 6px;
-        }
-      }
-
-      /* For phones */
-      @media (max-width: 480px) {
-        h2,
-        h3 {
-          font-size: 1.1rem;
-        }
-
-        .goal-card {
-          padding: 8px;
-        }
-
-        .goal-header .meta {
-          font-size: 11px;
-          line-height: 1.4;
-        }
-
-        .step-row {
-          padding: 6px;
-        }
-
-        .step-row .meta {
-          font-size: 11px;
-        }
-
-        .row {
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        input,
-        select,
-        button {
-          width: 100%;
-        }
-      }
-
-      body {
-        font-family: system-ui, Arial, sans-serif;
-        background: #0f172a;
-        color: #e5e7eb;
-      }
-
-      .goal-card {
-        background: #0b1220;
-        border: 1px solid #374151;
-        border-radius: 10px;
-        padding: 12px;
-        margin: 12px 0;
-      }
-
       .goal-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
       }
-
-      .steps-list {
-        margin-top: 10px;
-      }
-
       .step-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: #0f172a;
-        border: 1px solid #374151;
+        background: #1e293b;
+        border: 1px solid #334155;
         border-radius: 8px;
-        padding: 8px;
+        padding: 10px;
         margin: 6px 0;
       }
-
       .step-row .meta {
-        color: #93c5fd;
+        color: var(--text-muted);
         font-size: 12px;
-      }
-
-      .container {
-        max-width: 720px;
-        margin: 40px auto;
-        padding: 24px;
-        background: #111827;
-        border-radius: 12px;
-      }
-
-      h1 {
-        margin-bottom: 16px;
-      }
-
-      section {
-        margin-top: 24px;
-        padding-top: 12px;
-        border-top: 1px solid #374151;
-      }
-
-      .row {
-        display: flex;
-        gap: 12px;
-        margin: 8px 0;
-        flex-wrap: wrap;
-      }
-
-      input,
-      select,
-      button {
-        padding: 10px 12px;
-        border-radius: 8px;
-        border: 1px solid #374151;
-        background: #0b1220;
-        color: #e5e7eb;
-      }
-
-      button {
-        cursor: pointer;
-        background: #2563eb;
-        border: none;
-      }
-
-      button:hover {
-        background: #1d4ed8;
-      }
-
-      p {
-        color: #93c5fd;
-      }
-
-      .hidden {
-        display: none;
-      }
-
-      .success {
-        color: #10b981;
-      }
-
-      .error {
-        color: #ef4444;
-      }
-
+      } /* Loader */
       .loader {
-        border: 3px solid #374151;
-        border-top: 3px solid #2563eb;
+        border: 3px solid #334155;
+        border-top: 3px solid var(--bg-accent);
         border-radius: 50%;
-        width: 16px;
-        height: 16px;
+        width: 18px;
+        height: 18px;
         animation: spin 1s linear infinite;
         display: inline-block;
         margin-left: 8px;
       }
-
       @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
+        to {
           transform: rotate(360deg);
         }
-      }
-      .hidden {
-        display: none;
+      } /* Responsive */
+      @media (max-width: 768px) {
+        .goal-header,
+        .step-row {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+        }
+        button,
+        input,
+        select {
+          width: 100%;
+        }
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>Goal Tracker</h1>
+      <h1>FocuSet</h1>
 
       <!-- Auth Section -->
-      <div class="container">
+      <div class="container" id="hide">
         <h1>Authentication</h1>
 
         <!-- Login Section -->

@@ -86,14 +86,13 @@ async function loginUser() {
 
       showMessage(status, data.message, "success");
       document.getElementById("goalSection").classList.remove("hidden");
-      document.getElementById("attachSection")?.classList.remove("hidden");
       // Call showGoalsUI when login succeeds (add this line to your loginUser success block)
       document.getElementById("goalSection").classList.remove("hidden");
-      document.getElementById("attachSection")?.classList.remove("hidden");
       document.getElementById("loginMain").value = "";
       document.getElementById("loginPassword").value = "";
       showGoalsUI();
       fetchUpcomingGoals();
+      document.getElementById("hide").style.display = "none";
     } else {
       showMessage(status, data.error || data.message, "error");
     }
@@ -230,6 +229,10 @@ async function createGoal() {
     showMessage(status, "Network error", "error");
   }
 }
+
+document
+  .getElementById("refreshGoalsBtn")
+  .addEventListener("click", fetchUpcomingGoals);
 
 // ---------------- PUSH SUBSCRIPTION ----------------
 async function registerSW() {
