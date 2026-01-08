@@ -47,33 +47,29 @@ async function sendDailyNoti() {
     });
 
     for (const goal of goals) {
+      // figure out which step we should notify
       const currentIndex = goal.lastNotifiedStep ?? 0;
       const step = goal.steps[currentIndex];
 
-      if (step && step.frequency === "Daily" && step.completed === false) {
+      if (
+        step &&
+        step.frequency === "Daily" &&
+        step.subscription &&
+        step.subscription.endpoint &&
+        step.completed === false
+      ) {
         const payload = JSON.stringify({
-          title: "Daily Step Reminder",
-          body: `Your step "${step.name}" is waiting to be completed.`,
-          data: { url: baseUrl },
+          title: "Daily Step reminder",
+          body: `Your step "${step.name}" is waiting to be completed, This is the backend progress so far contact admin to disable`,
+          data: { url: `${baseUrl}` },
         });
 
-        // Loop through all subscriptions for this step
-        const subscriptions = step.subscriptions || [];
-        for (const sub of subscriptions) {
-          if (sub && sub.endpoint) {
-            try {
-              await wp.sendNotification(sub, payload);
-              console.log(
-                `Daily notification sent to user ${goal.user} for step "${step.name}" on ${sub.endpoint}`
-              );
-            } catch (err) {
-              console.error("Failed to send notification:", err);
-              // Optionally remove invalid subscriptions here
-            }
-          }
-        }
+        await wp.sendNotification(step.subscription, payload);
+        console.log(
+          `Daily notification sent to user ${goal.user} for step ${step.name}`
+        );
       } else if (step && step.completed === true) {
-        // Move to the next step if current one is completed
+        // If the current step is done, move to the next one
         goal.lastNotifiedStep = currentIndex + 1;
         await goal.save();
       }
