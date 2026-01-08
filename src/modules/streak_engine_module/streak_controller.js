@@ -22,17 +22,20 @@ async function updateStreak(req, res) {
     const stepIndex = Number(req.params.stepIndex);
     const userId = new mongoose.Types.ObjectId(req.user.id);
     const today = new Date();
+    today.setUTCHours(0, 0, 0, 0); // normalize to midnight UTC
+
     console.log("Querying streak with userId:", userId, "goalId:", goalId);
+
     let streak = await streak_model.findOne({ userId, goal: goalId });
     if (!streak) {
-      console.log("not there one");
       return res.status(404).json({ message: "Streak not found" });
     }
+
     const goal = await Goal.findOne({ _id: goalId, user: userId });
     if (!goal) {
-      console.log("not there 4");
       return res.status(404).json({ message: "Goal not found" });
     }
+
     const step = goal.steps.find((s) => s.index === stepIndex);
     if (!step) {
       return res.status(404).json({ message: "Step not found" });
@@ -45,75 +48,56 @@ async function updateStreak(req, res) {
     }
 
     // Step 3: Frequency-aware streak logging
-    let alreadyLogged = false;
     if (step.frequency === "Daily") {
-      // Daily → must log exact date
-      alreadyLogged = streak.completedDates?.some(
-        (d) => d.getTime() === today.getTime()
+      const alreadyLogged = streak.completedDates?.some(
+        (d) => new Date(d).getTime() === today.getTime()
       );
       if (!alreadyLogged) {
         streak.completedDates.push(today);
       }
+      // ✅ Always increment streak for each step
+      streak.currentStreak += 1;
     } else if (step.frequency === "Weekly") {
-      // Weekly → log by week start date (Monday UTC)
-      const weekStart = getWeekStart(today); // helper returns Date object
-      alreadyLogged = streak.completedWeeks?.some(
+      const weekStart = getWeekStart(today);
+      const alreadyLogged = streak.completedWeeks?.some(
         (d) => new Date(d).getTime() === weekStart.getTime()
       );
       if (!alreadyLogged) {
-        streak.completedWeeks.push(weekStart); // store as Date
+        streak.completedWeeks.push(weekStart);
       }
+      // ✅ Always increment streak for each step
+      streak.currentStreak += 1;
     }
 
-    function getWeekStart(date) {
-      const d = new Date(date);
-      d.setUTCHours(0, 0, 0, 0); // normalize to midnight UTC
-
-      // ISO week: Monday is the first day
-      const dayNum = d.getUTCDay() || 7; // Sunday=0 → 7
-      d.setUTCDate(d.getUTCDate() - dayNum + 1); // shift back to Monday
-
-      return d; // Date object for Monday of that week
-    }
-
-    // Step 4: Update streak progression
+    // Step 4: Update streak progression metadata
     if (!streak.lastActiveDate) {
-      // First activity → initialize streak
       streak.lastActiveDate = today;
-      streak.currentStreak = 1;
-      streak.longestStreak = 1;
+      streak.longestStreak = streak.currentStreak;
       streak.startDate = today;
       streak.endDate = null;
     } else {
       const diff = daysBetween(streak.lastActiveDate, today);
 
       if (diff === 0) {
-        // Already logged today → no change
+        // Same day → streak continues, already incremented above
+        streak.lastActiveDate = today;
       } else if (diff === 1 || step.frequency === "Weekly") {
-        // Daily consecutive OR weekly submission → streak continues
-        streak.currentStreak += 1;
-        streak.longestStreak = Math.max(
-          streak.longestStreak,
-          streak.currentStreak
-        );
+        // Next day or weekly → streak continues
         streak.lastActiveDate = today;
         streak.endDate = null;
       } else if (diff > 1) {
-        // Streak broke → reset
+        // Streak broke → reset start
         streak.endDate = streak.lastActiveDate;
-        streak.currentStreak = 1;
         streak.startDate = today;
         streak.lastActiveDate = today;
-        streak.longestStreak = Math.max(
-          streak.longestStreak,
-          streak.currentStreak
-        );
       }
     }
 
+    // Update longest streak
+    streak.longestStreak = Math.max(streak.longestStreak, streak.currentStreak);
+
     await streak.save();
 
-    // Step 5: Return updated info
     return res.json({
       message: "Step ticked and streak updated",
       step,
@@ -129,6 +113,23 @@ async function updateStreak(req, res) {
     console.error("Error updating streak:", err);
     return res.status(500).json({ message: "Server error" });
   }
+}
+
+// Helper
+function getWeekStart(date) {
+  const d = new Date(date);
+  d.setUTCHours(0, 0, 0, 0);
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() - dayNum + 1);
+  return d;
+}
+
+function daysBetween(date1, date2) {
+  const d1 = new Date(date1);
+  const d2 = new Date(date2);
+  d1.setUTCHours(0, 0, 0, 0);
+  d2.setUTCHours(0, 0, 0, 0);
+  return Math.floor((d2 - d1) / 86400000);
 }
 
 // GET /student/streaks/:goalId

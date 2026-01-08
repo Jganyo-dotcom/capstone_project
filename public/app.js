@@ -505,13 +505,16 @@ function renderCalendar(completedDates, completedWeeks) {
   const lastDay = new Date(currentYear, currentMonth + 1, 0);
   const daysInMonth = lastDay.getDate();
 
-  // Normalize sets
+  // ✅ Normalize sets
+  // Daily completions → compare by toDateString
   const completedSet = new Set(
     completedDates.map((d) => new Date(d).toDateString())
   );
-  const weekSet = new Set(completedWeeks);
 
-  // Add month header with navigation
+  // Weekly completions → convert serialized strings back to Date, then to timestamp
+  const weekSet = new Set(completedWeeks.map((d) => new Date(d).getTime()));
+
+  // Month header with navigation
   const headerRow = document.createElement("div");
   headerRow.className = "calendar-nav";
   headerRow.innerHTML = `
@@ -548,7 +551,7 @@ function renderCalendar(completedDates, completedWeeks) {
     cell.textContent = day;
 
     const dateStr = date.toDateString();
-    const weekKey = getWeekStart(date).getTime(); // canonical Monday of this week
+    const weekKey = getWeekStart(date).getTime(); // canonical Monday timestamp
 
     if (completedSet.has(dateStr)) {
       cell.classList.add("completed"); // daily completion
@@ -561,7 +564,7 @@ function renderCalendar(completedDates, completedWeeks) {
     grid.appendChild(cell);
   }
 
-  // Bind navigation buttons
+  // Navigation buttons
   document.getElementById("prevMonth").onclick = () => {
     currentMonth--;
     if (currentMonth < 0) {
@@ -581,11 +584,11 @@ function renderCalendar(completedDates, completedWeeks) {
   };
 }
 
-// Helper to generate week key
+// Helper: get Monday of the week
 function getWeekStart(date) {
   const d = new Date(date);
   d.setUTCHours(0, 0, 0, 0);
-  const dayNum = d.getUTCDay() || 7;
+  const dayNum = d.getUTCDay() || 7; // Sunday=0 → 7
   d.setUTCDate(d.getUTCDate() - dayNum + 1);
   return d;
 }
