@@ -2,7 +2,7 @@ const cron = require("node-cron");
 const {
   sendDailyNoti,
   sendWeeklyNoti,
-} = require("../modules/notification & reward module/noti_validation");
+} = require("../modules/notification & reward module/controller");
 
 // Every day at midnight (00:00)
 // cron.schedule("0 0 * * *", () => {
