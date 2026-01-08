@@ -10,11 +10,11 @@ const {
 //   sendDailyNoti();
 // });
 
-// // Every 15 minutes
-// cron.schedule("*/14 * * * *", () => {
-//   console.log("Running notification job...");
-//   sendDailyNoti();
-// });
+// Every 15 minutes
+cron.schedule("*/14 * * * *", () => {
+  console.log("Running notification job...");
+  sendDailyNoti();
+});
 
 // Every Sunday at midnight
 cron.schedule("0 0 * * 0", () => {

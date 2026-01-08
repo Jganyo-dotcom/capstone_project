@@ -11,6 +11,7 @@ const {
   deleteGoal,
   deleteStep,
   clearGoals,
+  Upcoming_goal,
 } = require("../Goal_managent_module/goal_controller.js");
 
 const {
@@ -29,6 +30,7 @@ router.delete("/goals", auth, CheckroleonAll, clearGoals);
 router.post("/goals", auth, createGoal);
 // router.post('/goals/:goalId/steps', validateStep, auth, addStep);
 router.get("/goals", auth, getGoals);
+router.get("/goals/upcoming", auth, Upcoming_goal);
 router.get("/goals/goalId", auth, getGoalById);
 // router.patch('/goals/:goalId/status', validateUpdateGoalStatus, auth, toggleGoalStatus);
 // router.patch('/goals/:goalId', validateUpdateGoalDetails, auth, updateGoalDetails);

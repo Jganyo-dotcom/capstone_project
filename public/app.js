@@ -93,6 +93,7 @@ async function loginUser() {
       document.getElementById("loginMain").value = "";
       document.getElementById("loginPassword").value = "";
       showGoalsUI();
+      fetchUpcomingGoals();
     } else {
       showMessage(status, data.error || data.message, "error");
     }
@@ -135,6 +136,45 @@ stepsContainer.addEventListener("input", (e) => {
     stepsContainer.appendChild(newInput);
   }
 });
+
+async function fetchUpcomingGoals() {
+  const status = document.getElementById("upcomingGoalsStatus");
+  const section = document.getElementById("upcomingGoalsSection");
+  const list = document.getElementById("upcomingGoalsList");
+
+  try {
+    const token = localStorage.getItem("token"); // if you use JWT
+    const res = await fetch("/student/create/goals/upcoming", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+
+    list.innerHTML = "";
+
+    if (res.ok && data.up_goal?.length > 0) {
+      // Show the section
+      section.classList.remove("hidden");
+
+      data.up_goal.forEach((goal) => {
+        const div = document.createElement("div");
+        div.className = "goal-item";
+        div.innerHTML = `
+          <strong>${goal.title}</strong>
+          <span>(ends: ${new Date(goal.endDate).toLocaleDateString()})</span>
+        `;
+        list.appendChild(div);
+      });
+      status.textContent = "";
+    } else {
+      section.classList.remove("hidden"); // still show section with message
+      status.textContent = "No upcoming goals expiring soon.";
+    }
+  } catch (err) {
+    console.error("Error fetching upcoming goals:", err);
+    section.classList.remove("hidden"); // show section even if error
+    status.textContent = "Error loading upcoming goals.";
+  }
+}
 
 // ---------------- GOAL CREATION ----------------
 async function createGoal() {

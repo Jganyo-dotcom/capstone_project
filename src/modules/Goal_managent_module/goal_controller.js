@@ -16,7 +16,8 @@ const createGoal = async (req, res, next) => {
       title: title,
       startDate: req.body.startDate || new Date(),
       endDate:
-        req.body.endDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        req.body.endDate || new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+
       status: req.body.status || "active",
       inactiveUntil: req.body.inactiveUntil || null,
       steps: steps,
@@ -276,6 +277,24 @@ async function clearGoals(req, res) {
   }
 }
 
+// upcoming deadlines on goals
+const Upcoming_goal = async (req, res) => {
+  try {
+    const today = new Date();
+    const sevenDays = new Date();
+    sevenDays.setDate(today.getDate() + 7);
+    const up_goal = await GoalModel.find({
+      user: req.user.id,
+      endDate: { $gte: today, $lte: sevenDays },
+    });
+    console.log(up_goal, "empyt");
+    return res.status(200).json({ message: "upcoming goal", up_goal });
+  } catch (err) {
+    console.error("Error clearing goals:", err);
+    res.status(500).json({ message: "Error clearing goals" });
+  }
+};
+
 module.exports = {
   createGoal,
   addStep,
@@ -287,4 +306,5 @@ module.exports = {
   deleteGoal,
   deleteStep,
   clearGoals,
+  Upcoming_goal,
 };
