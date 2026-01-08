@@ -11,7 +11,7 @@ const {
 // });
 
 // Every 15 minutes
-cron.schedule("*/1 * * * *", () => {
+cron.schedule("*/14 * * * *", () => {
   console.log("Running notification job...");
   sendDailyNoti();
 });
