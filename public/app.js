@@ -179,6 +179,8 @@ async function fetchUpcomingGoals() {
 async function createGoal() {
   const title = document.getElementById("goalTitle").value.trim();
   const frequency = document.getElementById("stepFrequency").value;
+  const endgoal = document.getElementById("endgoal").value;
+  const startDate = document.getElementById("startgoal").value;
   const status = document.getElementById("goalStatus");
 
   const steps = [...document.querySelectorAll(".stepInput")]
@@ -191,8 +193,17 @@ async function createGoal() {
       subscription,
     }));
 
-  if (!title || steps.length === 0) {
-    return showMessage(status, "Title and steps required", "error");
+  if (
+    !title.trim() ||
+    steps.length === 0 ||
+    !startGoalInput.value ||
+    !endGoalInput.value
+  ) {
+    return showMessage(
+      status,
+      "Title , steps , startdate and endate is required",
+      "error"
+    );
   }
 
   if (!subscription) {
@@ -205,13 +216,14 @@ async function createGoal() {
 
   showLoader(status, "Creating goal");
   try {
+    console.log(steps);
     const res = await fetch("/student/create/goals", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
-      body: JSON.stringify({ title, steps }),
+      body: JSON.stringify({ title, steps, endgoal, startDate }),
     });
 
     const data = await res.json();
@@ -546,6 +558,39 @@ window.onclick = (event) => {
     modal.classList.add("hidden");
   }
 };
+
+const startGoalInput = document.getElementById("startgoal");
+const endGoalInput = document.getElementById("endgoal");
+
+// Allow start date to be today orlater
+const today = new Date();
+const yyyy = today.getFullYear();
+const mm = String(today.getMonth() + 1).padStart(2, "0");
+const dd = String(today.getDate()).padStart(2, "0");
+const todayStr = `${yyyy}-${mm}-${dd}`;
+startGoalInput.min = todayStr;
+
+// When user picks a start date, enforce end date > start date
+startGoalInput.addEventListener("change", () => {
+  const startDate = new Date(startGoalInput.value);
+  if (!isNaN(startDate)) {
+    // End date must be at least one day after start date
+    const minEnd = new Date(startDate);
+    minEnd.setDate(minEnd.getDate() + 1);
+
+    const yyyy = minEnd.getFullYear();
+    const mm = String(minEnd.getMonth() + 1).padStart(2, "0");
+    const dd = String(minEnd.getDate()).padStart(2, "0");
+    const minEndStr = `${yyyy}-${mm}-${dd}`;
+
+    endGoalInput.min = minEndStr;
+
+    // If current end date is invalid (before min), clear it
+    if (endGoalInput.value && new Date(endGoalInput.value) < minEnd) {
+      endGoalInput.value = "";
+    }
+  }
+});
 
 // Track current view
 let currentYear = new Date().getFullYear();

@@ -171,8 +171,14 @@
         justify-content: space-between;
         align-items: center;
       }
+      #stepsContainer {
+        display: flex;
+        flex-direction: column; /* stack children vertically */
+        gap: 8px; /* spacing between inputs */
+      }
       .step-row {
         display: flex;
+        flex-direction: column;
         justify-content: space-between;
         align-items: center;
         background: #1e293b;
@@ -181,6 +187,7 @@
         padding: 10px;
         margin: 6px 0;
       }
+
       .step-row .meta {
         color: var(--text-muted);
         font-size: 12px;
@@ -206,6 +213,11 @@
           flex-direction: column;
           align-items: flex-start;
           gap: 8px;
+        }
+        #stepsContainer {
+          display: flex;
+          flex-direction: column; /* stack children vertically */
+          gap: 8px; /* spacing between inputs */
         }
         button,
         input,
@@ -287,6 +299,10 @@
             <option value="Daily">Daily</option>
             <option value="Weekly">Weekly</option>
           </select>
+          <label for="startgoal">starts:</label>
+          <input type="date" id="startgoal" />
+          <label for="endgoal">ends:</label>
+          <input type="date" placeholder="when the goal ends" id="endgoal" />
           <button id="createGoalBtn">Create Goal</button>
         </div>
         <p id="goalStatus"></p>
@@ -311,6 +327,7 @@
         <div class="row">
           <button id="refreshGoalsBtn">Refresh</button>
           <select id="goalsPageSize">
+            <option value="1">1 per page</option>
             <option value="5">5 per page</option>
             <option value="10" selected>10 per page</option>
             <option value="20">20 per page</option>

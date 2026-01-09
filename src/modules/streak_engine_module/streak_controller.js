@@ -55,6 +55,8 @@ async function updateStreak(req, res) {
       );
       if (!alreadyLogged) {
         streak.completedDates.push(today);
+        goal.completedSteps.push(today);
+        await goal.save();
       }
       // ✅ Always increment streak for each step
       streak.currentStreak += 1;
@@ -65,6 +67,8 @@ async function updateStreak(req, res) {
       );
       if (!alreadyLogged) {
         streak.completedWeeks.push(weekStart);
+        goal.completedWeeks.push(weekStart);
+        await goal.save();
       }
       // ✅ Always increment streak for each step
       streak.currentStreak += 1;
@@ -108,8 +112,10 @@ async function updateStreak(req, res) {
       lastActiveDate: streak.lastActiveDate,
       startDate: streak.startDate,
       endDate: streak.endDate,
-      completedDates: streak.completedDates,
-      completedWeeks: streak.completedWeeks,
+      completedDates: streak.completedDates || [],
+      completedWeeks: streak.completedWeeks || [],
+      goalCompletedSteps: goal.completedSteps || [],
+
       unlockedRewards,
     });
   } catch (err) {
@@ -157,6 +163,13 @@ const getStreaks = async (req, res, next) => {
     if (!streak) {
       return res.status(404).json({ message: "Streak not found" });
     }
+    const goal = await Goal.findOne({
+      user: req.user.id, // user resolved from auth middleware
+      _id: goalId,
+    });
+    if (!goal) {
+      return res.status(404).json({ message: "Streak not found" });
+    }
 
     return res.status(200).json({
       message: "Streak fetched successfully",
@@ -165,8 +178,9 @@ const getStreaks = async (req, res, next) => {
       lastActiveDate: streak.lastActiveDate || null,
       startDate: streak.startDate || null,
       endDate: streak.endDate || null,
-      completedDates: streak.completedDates || [], // daily streaks
-      completedWeeks: streak.completedWeeks || [], // weekly streaks
+      completedDates: goal.completedSteps || [],
+      completedWeeks: goal.completedWeeks || [],
+      goalCompletedSteps: goal.completedSteps || [],
     });
   } catch (error) {
     console.error("Error fetching streaks:", error);

@@ -2,17 +2,38 @@ const Joi = require("joi");
 
 const createGoalSchema = Joi.object({
   title: Joi.string().min(5).max(200).required().trim(),
-  steps: Joi.array().items(Joi.string().min(1)).min(1).required(),
-  // startDate: Joi.date().required(),
-  // endDate: Joi.date().greater(Joi.ref('startDate')).required().messages({
-  //     'date.greater': 'End date must be after start date'
-  // }),
-  //status: Joi.string().valid('active', 'inactive').default('active'),
-  // inactiveUnitl: Joi.when('status', {
-  //     is: 'inactive',
-  //     then: Joi.date().required(),
-  //     otherwise: Joi.forbidden()
-  // })
+
+  startDate: Joi.date().required(),
+  endgoal: Joi.date().greater(Joi.ref("startDate")).required().messages({
+    "date.greater": "End date must be after start date",
+  }),
+
+  status: Joi.string().valid("active", "inactive").default("active"),
+
+  inactiveUntil: Joi.when("status", {
+    is: "inactive",
+    then: Joi.date().required(),
+    otherwise: Joi.forbidden(),
+  }),
+
+  steps: Joi.array()
+    .items(
+      Joi.object({
+        index: Joi.number().integer().min(0).required(),
+        name: Joi.string().min(1).required(),
+        frequency: Joi.string().valid("Daily", "Weekly").required(),
+        subscription: Joi.object({
+          endpoint: Joi.string().uri().required(),
+          expirationTime: Joi.date().allow(null), // ✅ matches Push API
+          keys: Joi.object({
+            p256dh: Joi.string().required(),
+            auth: Joi.string().required(),
+          }).required(),
+        }).required(),
+      })
+    )
+    .min(1)
+    .required(),
 });
 
 const validateCreateGoal = (req, res, next) => {

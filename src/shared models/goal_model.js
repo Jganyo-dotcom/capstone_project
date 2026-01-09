@@ -50,6 +50,8 @@ const goalSchema = new mongoose.Schema(
     },
     inactiveUntil: Date,
     lastNotifiedStep: { type: Number, default: 0 },
+    completedSteps: { type: [Date], default: [] },
+    completedWeeks: { type: [Date], default: [] },
     steps: [stepSchema],
   },
   { timestamps: true }
