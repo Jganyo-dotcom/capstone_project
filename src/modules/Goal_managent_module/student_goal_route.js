@@ -12,6 +12,7 @@ const {
   deleteStep,
   clearGoals,
   Upcoming_goal,
+  getAllGoals,
 } = require("../Goal_managent_module/goal_controller.js");
 
 const {
@@ -28,6 +29,7 @@ const { CheckroleonAll } = require("../../middlewares/role.js");
 
 router.delete("/goals", auth, CheckroleonAll, clearGoals);
 router.post("/goals", auth, validateCreateGoal, createGoal);
+router.get("/getAll/goals", getAllGoals);
 // router.post('/goals/:goalId/steps', validateStep, auth, addStep);
 router.get("/goals", auth, getGoals);
 router.get("/goals/upcoming", auth, Upcoming_goal);

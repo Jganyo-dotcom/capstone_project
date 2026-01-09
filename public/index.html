@@ -104,13 +104,30 @@
         transition: background 0.3s ease;
       }
       .calendar-day.completed {
-        background: var(--success);
-        color: #fff;
+        background-color: #00ff7f; /* neon spring green */
+        color: #000; /* black text for contrast */
+        border: 2px solid #fff; /* crisp white border */
+        box-shadow: 0 0 10px #00ff7f, 0 0 20px #00ff7f; /* glowing aura */
+        font-weight: bold; /* make numbers stand out */
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
       }
+
+      .calendar-day.completed:hover {
+        transform: scale(1.1); /* playful zoom on hover */
+        box-shadow: 0 0 15px #00ff7f, 0 0 30px #00ff7f;
+      }
+
       .calendar-day.missed {
-        background: var(--error);
+        background-color: #ff4d4d; /* vivid red for missed */
         color: #fff;
+        opacity: 0.8;
       }
+
+      .calendar-day.upcoming {
+        background-color: #ffd700; /* bright gold for upcoming */
+        color: #000;
+      }
+
       .calendar-week.completed {
         background: var(--bg-accent);
         color: #fff;

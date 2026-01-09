@@ -294,6 +294,11 @@ const Upcoming_goal = async (req, res) => {
   }
 };
 
+const getAllGoals = async (req, res) => {
+  const goals = await GoalModel.find({});
+  return res.status(200).json({ message: "success", goals });
+};
+
 module.exports = {
   createGoal,
   addStep,
@@ -306,4 +311,5 @@ module.exports = {
   deleteStep,
   clearGoals,
   Upcoming_goal,
+  getAllGoals,
 };

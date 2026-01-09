@@ -23,6 +23,7 @@ async function updateStreak(req, res) {
     const stepIndex = Number(req.params.stepIndex);
     const userId = new mongoose.Types.ObjectId(req.user.id);
     const today = new Date();
+    console.log(today);
     today.setUTCHours(0, 0, 0, 0); // normalize to midnight UTC
 
     console.log("Querying streak with userId:", userId, "goalId:", goalId);
