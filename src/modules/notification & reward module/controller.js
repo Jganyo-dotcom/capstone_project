@@ -107,7 +107,7 @@ async function sendWeeklyNoti() {
 
         await wp.sendNotification(step.subscription, payload);
         console.log(
-          `weekly notification sent to user ${goal.userId} for step ${step.name}`
+          `weekly notification sent to user ${goal.user} for step ${step.name}`
         );
       } else if (step && step.completed === true) {
         goal.lastNotifiedStep = currentIndex + 1;

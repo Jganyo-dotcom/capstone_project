@@ -10,15 +10,14 @@ wp.setVapidDetails(
 );
 const createGoal = async (req, res, next) => {
   try {
-    const { title, steps } = req.body;
+    const { title, steps, startDate, endgoal, frequency } = req.body;
     const newGoal = new GoalModel({
       user: req.user.id,
       title: title,
-      startDate: req.body.startDate || new Date(),
-      endDate:
-        req.body.endDate || new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-
-      status: req.body.status || "active",
+      startDate: startDate || new Date(),
+      endDate: endgoal || new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+      status: "active",
+      frequency: frequency,
       inactiveUntil: req.body.inactiveUntil || null,
       steps: steps,
       lastNotifiedStep: 0,

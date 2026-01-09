@@ -4,11 +4,13 @@ const port = process.env.PORT || 3000;
 const db_connection = require("./config/db.coonection");
 const registerRoute = require("./src/modules/user_module/user_route");
 const path = require("path");
+const morgan = require("morgan");
 const notiRoute = require("./src/modules/notification & reward module/noti_route");
 const CreateRoute = require("./src/modules/Goal_managent_module/student_goal_route");
 const streakRoute = require("./src/modules/streak_engine_module/student_route");
 require("./src/shared models/cron");
 
+app.use(morgan("dev"));
 app.use(express.json());
 db_connection();
 app.use(express.static(path.join(__dirname, "public")));

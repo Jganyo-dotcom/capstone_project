@@ -11,7 +11,7 @@ const stepSchema = new mongoose.Schema({
   },
   frequency: {
     type: String,
-    enum: ["Daily", "Weekly"],
+    enum: ["Daily", "Weekly", "Monthly"],
     default: "Daily",
   },
   subscription: {

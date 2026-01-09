@@ -188,6 +188,24 @@
         margin: 6px 0;
       }
 
+      @media (min-width: 600px) {
+        .row {
+          flex-direction: row;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        .row label {
+          margin-right: 4px;
+        }
+        .row input,
+        .row select,
+        .row button {
+          flex: 1; /* let them expand evenly */
+          min-width: 120px;
+        }
+      }
+
       .step-row .meta {
         color: var(--text-muted);
         font-size: 12px;
@@ -298,6 +316,7 @@
           <select id="stepFrequency">
             <option value="Daily">Daily</option>
             <option value="Weekly">Weekly</option>
+            <option value="Monthly">Monthly</option>
           </select>
           <label for="startgoal">starts:</label>
           <input type="date" id="startgoal" />
@@ -327,9 +346,9 @@
         <div class="row">
           <button id="refreshGoalsBtn">Refresh</button>
           <select id="goalsPageSize">
-            <option value="1">1 per page</option>
+            <option value="1" selected>1 per page</option>
             <option value="5">5 per page</option>
-            <option value="10" selected>10 per page</option>
+            <option value="10">10 per page</option>
             <option value="20">20 per page</option>
           </select>
         </div>
