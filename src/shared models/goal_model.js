@@ -1,3 +1,4 @@
+const { string } = require("joi");
 const mongoose = require("mongoose");
 
 const stepSchema = new mongoose.Schema({
@@ -48,11 +49,17 @@ const goalSchema = new mongoose.Schema(
       enum: ["active", "inactive"],
       default: "active",
     },
+    nature: {
+      type: String,
+      enum: ["Done", "Ongoing"],
+      default: "active",
+    },
     inactiveUntil: Date,
     lastNotifiedStep: { type: Number, default: 0 },
     completedSteps: { type: [Date], default: [] },
     completedWeeks: { type: [Date], default: [] },
     steps: [stepSchema],
+    array: { type: [String], default: [] },
   },
   { timestamps: true }
 );

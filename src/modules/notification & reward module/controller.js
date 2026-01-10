@@ -42,7 +42,9 @@ async function sendDailyNoti() {
   try {
     const goals = await Goal.find({
       status: "active",
+      startDate: { $lte: new Date() },
       endDate: { $gte: new Date() },
+      nature: "ongoing",
       "steps.frequency": "Daily",
     });
 
@@ -83,7 +85,9 @@ async function sendWeeklyNoti() {
   try {
     const goals = await Goal.find({
       status: "active",
+      startDate: { $lte: new Date() },
       endDate: { $gte: new Date() },
+      nature: "ongoing",
       "steps.frequency": "weekly",
     });
 
@@ -102,7 +106,7 @@ async function sendWeeklyNoti() {
         const payload = JSON.stringify({
           title: "Daily Step reminder",
           body: `Your step "${step.name}" is waiting to be completed`,
-          data: { url: `/steps/${step._id}` },
+          data: { url: `${baseUrl}` },
         });
 
         await wp.sendNotification(step.subscription, payload);

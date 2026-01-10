@@ -46,7 +46,6 @@ async function updateStreak(req, res) {
     // Step 2: Mark step as completed
     if (!step.completed) {
       step.completed = true;
-      await goal.save();
     }
 
     // Step 3: Frequency-aware streak logging
@@ -57,10 +56,14 @@ async function updateStreak(req, res) {
       if (!alreadyLogged) {
         streak.completedDates.push(today);
         goal.completedSteps.push(today);
-        await goal.save();
+
+        goal.array.push(step.name);
+        if (goal.array.length === step.index + 1) {
+          goal.nature = "Done";
+        }
+        streak.currentStreak += 1;
       }
-      // ✅ Always increment streak for each step
-      streak.currentStreak += 1;
+      //  Always increment streak for each step
     } else if (step.frequency === "Weekly") {
       const weekStart = getWeekStart(today);
       const alreadyLogged = streak.completedWeeks?.some(
@@ -69,10 +72,12 @@ async function updateStreak(req, res) {
       if (!alreadyLogged) {
         streak.completedWeeks.push(weekStart);
         goal.completedWeeks.push(weekStart);
-        await goal.save();
+        if (goal.array.length === step.index + 1) {
+          goal.nature = "Done";
+        }
+        streak.currentStreak += 1;
       }
-      // ✅ Always increment streak for each step
-      streak.currentStreak += 1;
+      // Always increment streak for each step
     }
 
     // Step 4: Update streak progression metadata
@@ -101,8 +106,19 @@ async function updateStreak(req, res) {
 
     // Update longest streak
     streak.longestStreak = Math.max(streak.longestStreak, streak.currentStreak);
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+      await goal.save({ session });
+      await streak.save({ session });
+      await session.commitTransaction();
+    } catch (err) {
+      await session.abortTransaction();
+      throw err;
+    } finally {
+      session.endSession();
+    }
 
-    await streak.save();
     const unlockedRewards = await checkRewards(userId);
 
     return res.json({
@@ -194,7 +210,7 @@ async function checkRewards(userId) {
   const rewards = await reward_model.find({ userId });
   const goalsCompleted = await Goal.countDocuments({
     userId,
-    status: "completed",
+    nature: "Done",
   });
 
   const longest = Math.max(...streaks.map((s) => s.longestStreak), 0);
@@ -237,5 +253,7 @@ async function checkRewards(userId) {
 
   return rewards.filter((r) => r.unlocked);
 }
+
+async function changeToDone() {}
 
 module.exports = { updateStreak, getStreaks };

@@ -20,6 +20,7 @@ const createGoal = async (req, res, next) => {
       frequency: frequency,
       inactiveUntil: req.body.inactiveUntil || null,
       steps: steps,
+      nature: "ongoing",
       lastNotifiedStep: 0,
     });
 

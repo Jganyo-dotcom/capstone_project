@@ -27,7 +27,7 @@ const router = express.Router();
 const auth = require("../../middlewares/auth.js");
 const { CheckroleonAll } = require("../../middlewares/role.js");
 
-router.delete("/goals", auth, CheckroleonAll, clearGoals);
+router.delete("/goals", auth, clearGoals);
 router.post("/goals", auth, validateCreateGoal, createGoal);
 router.get("/getAll/goals", getAllGoals);
 // router.post('/goals/:goalId/steps', validateStep, auth, addStep);
