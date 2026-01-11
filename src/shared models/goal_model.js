@@ -52,7 +52,7 @@ const goalSchema = new mongoose.Schema(
     nature: {
       type: String,
       enum: ["Done", "Ongoing"],
-      default: "active",
+      default: "Ongoing",
     },
     inactiveUntil: Date,
     lastNotifiedStep: { type: Number, default: 0 },
