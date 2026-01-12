@@ -205,7 +205,7 @@ const getStreaks = async (req, res, next) => {
   }
 };
 
-async function checkRewards(userId) {
+async function checkRewards(req ,res,userId) {
 
   const streaks = await streak_model.find({ userId, longestStreak: 30 });
   if (streaks.length > 0) {
