@@ -132,7 +132,6 @@ async function updateStreak(req, res) {
       completedWeeks: streak.completedWeeks || [],
       goalCompletedSteps: goal.completedSteps || [],
 
-      unlockedRewards,
     });
   } catch (err) {
     console.error("Error updating streak:", err);
