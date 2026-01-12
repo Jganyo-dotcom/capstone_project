@@ -44,9 +44,9 @@ async function sendDailyNoti() {
       status: "active",
       startDate: { $lte: new Date() },
       endDate: { $gte: new Date() },
-      nature: "ongoing",
       "steps.frequency": "Daily",
     });
+    console.log(goals);
 
     for (const goal of goals) {
       // figure out which step we should notify

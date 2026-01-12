@@ -206,54 +206,74 @@ const getStreaks = async (req, res, next) => {
 };
 
 async function checkRewards(userId) {
-  const streaks = await streak_model.find({ userId });
-  const rewards = await reward_model.find({ userId });
+
+  const streaks = await streak_model.find({ userId, longestStreak: 30 });
+  if (streaks.length > 0) {
+    res
+      .status(200)
+      .json({ message: "you have unlocked our biggest", reward: "unlock" });
+  } else {
+    res.status(404).json({ message: "keep moving" });
+  }
+  const goal = await Goal.find({ userId: userId, nature: "Done" });
+  if (goal.length > 0) {
+    res.status(200).json({ message: "you have a reward from us", goal });
+  } else {
+    res.status(404).json({ message: "keep moving" });
+  }
   const goalsCompleted = await Goal.countDocuments({
     userId,
     nature: "Done",
   });
-
-  const longest = Math.max(...streaks.map((s) => s.longestStreak), 0);
-
-  for (let reward of rewards) {
-    if (!reward.unlocked) {
-      let unlock = false;
-
-      // Continuous streak badge (basic streak length)
-      if (
-        reward.criteria.streakLength &&
-        longest >= reward.criteria.streakLength
-      ) {
-        unlock = true;
-      }
-
-      // ✅ No breaks badge (continuous streak without endDate)
-      if (reward.criteria.noBreaks) {
-        const continuous = streaks.some(
-          (s) => !s.endDate && s.currentStreak >= reward.criteria.streakLength
-        );
-        if (continuous) unlock = true;
-      }
-
-      // Multiple goals medal
-      if (
-        reward.criteria.goalsCompleted &&
-        goalsCompleted >= reward.criteria.goalsCompleted
-      ) {
-        unlock = true;
-      }
-
-      if (unlock) {
-        reward.unlocked = true;
-        reward.unlockedAt = new Date();
-        await reward.save();
-      }
-    }
+  if (goalsCompleted.length > 6) {
+    res
+      .status(200)
+      .json({ message: "you have a reward from us", reward: "unlock" });
+  } else {
+    return res.status(404).json({ message: "continue completing goals" });
   }
 
-  return rewards.filter((r) => r.unlocked);
+  //   const longest = Math.max(...streaks.map((s) => s.longestStreak), 0);
+
+  //   for (let reward of rewards) {
+  //     if (!reward.unlocked) {
+  //       let unlock = false;
+
+  //       // Continuous streak badge (basic streak length)
+  //       if (
+  //         reward.criteria.streakLength &&
+  //         longest >= reward.criteria.streakLength
+  //       ) {
+  //         unlock = true;
+  //       }
+
+  //       //  No breaks badge (continuous streak without endDate)
+  //       if (reward.criteria.noBreaks) {
+  //         const continuous = streaks.some(
+  //           (s) => !s.endDate && s.currentStreak >= reward.criteria.streakLength
+  //         );
+  //         if (continuous) unlock = true;
+  //       }
+
+  //       // Multiple goals medal
+  //       if (
+  //         reward.criteria.goalsCompleted &&
+  //         goalsCompleted >= reward.criteria.goalsCompleted
+  //       ) {
+  //         unlock = true;
+  //       }
+
+  //       if (unlock) {
+  //         reward.unlocked = true;
+  //         reward.unlockedAt = new Date();
+  //         await reward.save();
+  //       }
+  //     }
+  //   }
+
+  //   return rewards.filter((r) => r.unlocked);
 }
 
-async function changeToDone() {}
+// async function changeToDone() {}
 
 module.exports = { updateStreak, getStreaks };
