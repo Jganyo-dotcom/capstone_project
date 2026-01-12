@@ -119,7 +119,6 @@ async function updateStreak(req, res) {
       session.endSession();
     }
 
-    const unlockedRewards = await checkRewards(userId);
 
     return res.json({
       message: "Step ticked and streak updated",
