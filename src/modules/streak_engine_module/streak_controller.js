@@ -77,9 +77,9 @@ async function updateStreak(req, res) {
         if (goal.array.length === step.index + 1) {
           goal.nature = "Done";
         }
-        streak.currentStreak += 1;
       }
       // Always increment streak for each step
+      streak.currentStreak += 1;
     }
 
     // Step 4: Update streak progression metadata
@@ -121,9 +121,7 @@ async function updateStreak(req, res) {
     } finally {
       session.endSession();
     }
-
     const unlockedRewards = await checkRewards(userId);
-
     return res.json({
       message: "Step ticked and streak updated",
       step,
