@@ -1,34 +1,15 @@
 const mongoose = require("mongoose");
 
-const RewardSchema = new mongoose.Schema(
-  {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    goal: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Goal",
-    },
-
-    // Badge / Medal / Trophy
-    type: { type: String, enum: ["badge", "medal", "trophy"], required: true },
-
-    // Name of the reward
-    name: { type: String, required: true },
-
-    // Criteria for unlocking
-    criteria: {
-      streakLength: { type: Number }, // e.g. 7-day streak
-      noBreaks: { type: Boolean }, // true if streak must be continuous
-      goalsCompleted: { type: Number }, // e.g. 2 goals completed
-    },
-
-    unlocked: { type: Boolean, default: false },
-    unlockedAt: { type: Date },
+const rewardSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  type: {
+    type: String,
+    enum: ["streak", "goal", "milestone"], // categories of rewards
+    required: true,
   },
-  { timestamps: true }
-);
+  description: { type: String, required: true }, // human-readable message
+  unlockedAt: { type: Date, default: Date.now }, // when reward was unlocked
+  metadata: { type: Object }, // optional: store streak length, goalId, etc.
+});
 
-module.exports = mongoose.model("Reward", RewardSchema);
+module.exports = mongoose.model("Reward", rewardSchema);

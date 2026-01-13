@@ -1,4 +1,4 @@
-const reward_model = require("../../shared models/reward_model");
+const Reward = require("../../shared models/reward_model");
 const streak_model = require("../../shared models/streak_model");
 const Goal = require("../../shared models/goal_model");
 const mongoose = require("mongoose");
@@ -47,6 +47,11 @@ async function updateStreak(req, res) {
     if (!step.completed) {
       step.completed = true;
     }
+    // ✅ Instead of relying on index math, check if ALL steps are completed
+    const allStepsCompleted = goal.steps.every((s) => s.completed === true);
+    if (allStepsCompleted) {
+      goal.nature = "Done";
+    }
 
     // Step 3: Frequency-aware streak logging
     if (step.frequency === "Daily") {
@@ -58,12 +63,9 @@ async function updateStreak(req, res) {
         goal.completedSteps.push(today);
 
         goal.array.push(step.name);
-        if (goal.array.length === step.index + 1) {
-          goal.nature = "Done";
-        }
-        streak.currentStreak += 1;
       }
       //  Always increment streak for each step
+      streak.currentStreak += 1;
     } else if (step.frequency === "Weekly") {
       const weekStart = getWeekStart(today);
       const alreadyLogged = streak.completedWeeks?.some(
@@ -98,12 +100,13 @@ async function updateStreak(req, res) {
         streak.endDate = null;
       } else if (diff > 1) {
         // Streak broke → reset start
+        streak.currentStreak = 1;
         streak.endDate = streak.lastActiveDate;
         streak.startDate = today;
         streak.lastActiveDate = today;
       }
     }
-
+    console.log(goal);
     // Update longest streak
     streak.longestStreak = Math.max(streak.longestStreak, streak.currentStreak);
     const session = await mongoose.startSession();
@@ -133,7 +136,7 @@ async function updateStreak(req, res) {
       completedWeeks: streak.completedWeeks || [],
       goalCompletedSteps: goal.completedSteps || [],
 
-      unlockedRewards,
+      Rewards: unlockedRewards,
     });
   } catch (err) {
     console.error("Error updating streak:", err);
@@ -206,73 +209,92 @@ const getStreaks = async (req, res, next) => {
 };
 
 async function checkRewards(userId) {
+  const rewards = [];
+  console.log("🎁 Rewards found:", rewards);
 
-  const streaks = await streak_model.find({ userId, longestStreak: 30 });
+  // Reward 1: Longest streak milestone
+  const streaks = await streak_model.find({
+    userId,
+    longestStreak: { $gte: 30 },
+  });
   if (streaks.length > 0) {
-    res
-      .status(200)
-      .json({ message: "you have unlocked our biggest", reward: "unlock" });
-  } else {
-    res.status(404).json({ message: "keep moving" });
+    rewards.push({
+      type: "streak",
+      description: "You unlocked our biggest streak reward!",
+      metadata: { longestStreak: 30 },
+    });
   }
-  const goal = await Goal.find({ userId: userId, nature: "Done" });
-  if (goal.length > 0) {
-    res.status(200).json({ message: "you have a reward from us", goal });
-  } else {
-    res.status(404).json({ message: "keep moving" });
+
+  // Reward 2: Any completed goal
+  const completedGoals = await Goal.find({ userId, nature: "Done" });
+  if (completedGoals.length > 0) {
+    rewards.push({
+      type: "goal",
+      description: "You completed a goal!",
+      metadata: { goals: completedGoals.map((g) => g._id) },
+    });
   }
-  const goalsCompleted = await Goal.countDocuments({
+
+  // Reward 3: Milestone for 6+ completed goals
+  const goalsCompletedCount = await Goal.countDocuments({
     userId,
     nature: "Done",
   });
-  if (goalsCompleted.length > 6) {
-    res
-      .status(200)
-      .json({ message: "you have a reward from us", reward: "unlock" });
-  } else {
-    return res.status(404).json({ message: "continue completing goals" });
+  if (goalsCompletedCount >= 6) {
+    rewards.push({
+      type: "milestone",
+      description: "You ve completed more than 6 goals!",
+      metadata: { goalsCompletedCount },
+    });
   }
 
-  //   const longest = Math.max(...streaks.map((s) => s.longestStreak), 0);
+  // Save rewards to DB (optional)
+  if (rewards.length > 0) {
+    await Reward.insertMany(rewards.map((r) => ({ ...r, userId })));
+  }
 
-  //   for (let reward of rewards) {
-  //     if (!reward.unlocked) {
-  //       let unlock = false;
-
-  //       // Continuous streak badge (basic streak length)
-  //       if (
-  //         reward.criteria.streakLength &&
-  //         longest >= reward.criteria.streakLength
-  //       ) {
-  //         unlock = true;
-  //       }
-
-  //       //  No breaks badge (continuous streak without endDate)
-  //       if (reward.criteria.noBreaks) {
-  //         const continuous = streaks.some(
-  //           (s) => !s.endDate && s.currentStreak >= reward.criteria.streakLength
-  //         );
-  //         if (continuous) unlock = true;
-  //       }
-
-  //       // Multiple goals medal
-  //       if (
-  //         reward.criteria.goalsCompleted &&
-  //         goalsCompleted >= reward.criteria.goalsCompleted
-  //       ) {
-  //         unlock = true;
-  //       }
-
-  //       if (unlock) {
-  //         reward.unlocked = true;
-  //         reward.unlockedAt = new Date();
-  //         await reward.save();
-  //       }
-  //     }
-  //   }
-
-  //   return rewards.filter((r) => r.unlocked);
+  return rewards;
 }
+
+//   const longest = Math.max(...streaks.map((s) => s.longestStreak), 0);
+
+//   for (let reward of rewards) {
+//     if (!reward.unlocked) {
+//       let unlock = false;
+
+//       // Continuous streak badge (basic streak length)
+//       if (
+//         reward.criteria.streakLength &&
+//         longest >= reward.criteria.streakLength
+//       ) {
+//         unlock = true;
+//       }
+
+//       //  No breaks badge (continuous streak without endDate)
+//       if (reward.criteria.noBreaks) {
+//         const continuous = streaks.some(
+//           (s) => !s.endDate && s.currentStreak >= reward.criteria.streakLength
+//         );
+//         if (continuous) unlock = true;
+//       }
+
+//       // Multiple goals medal
+//       if (
+//         reward.criteria.goalsCompleted &&
+//         goalsCompleted >= reward.criteria.goalsCompleted
+//       ) {
+//         unlock = true;
+//       }
+
+//       if (unlock) {
+//         reward.unlocked = true;
+//         reward.unlockedAt = new Date();
+//         await reward.save();
+//       }
+//     }
+//   }
+
+//   return rewards.filter((r) => r.unlocked);
 
 // async function changeToDone() {}
 

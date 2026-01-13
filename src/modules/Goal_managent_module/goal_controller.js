@@ -170,6 +170,7 @@ const getGoals = async (req, res, next) => {
       .skip((page - 1) * limit)
       .limit(limit)
       .lean();
+    console.log(goals);
     return res.status(200).json({
       message: "Goals fetched successfully",
       page,
@@ -297,6 +298,7 @@ const Upcoming_goal = async (req, res) => {
 
 const getAllGoals = async (req, res) => {
   const goals = await GoalModel.find({});
+  console.log(goals);
   return res.status(200).json({ message: "success", goals });
 };
 
