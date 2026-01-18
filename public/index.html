@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -107,14 +107,20 @@
         background-color: #00ff7f; /* neon spring green */
         color: #000; /* black text for contrast */
         border: 2px solid #fff; /* crisp white border */
-        box-shadow: 0 0 10px #00ff7f, 0 0 20px #00ff7f; /* glowing aura */
+        box-shadow:
+          0 0 10px #00ff7f,
+          0 0 20px #00ff7f; /* glowing aura */
         font-weight: bold; /* make numbers stand out */
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.2s ease;
       }
 
       .calendar-day.completed:hover {
         transform: scale(1.1); /* playful zoom on hover */
-        box-shadow: 0 0 15px #00ff7f, 0 0 30px #00ff7f;
+        box-shadow:
+          0 0 15px #00ff7f,
+          0 0 30px #00ff7f;
       }
 
       .calendar-day.missed {
@@ -298,6 +304,11 @@
           <div class="row">
             <input id="regPhone" type="tel" placeholder="Phone Number" />
             <input id="regPassword" type="password" placeholder="Password" />
+            <input
+              id="regCPassword"
+              type="password"
+              placeholder="Password again"
+            />
           </div>
           <div class="row">
             <button id="registerBtn">Register</button>

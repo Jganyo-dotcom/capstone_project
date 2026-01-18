@@ -62,7 +62,7 @@ const goalSchema = new mongoose.Schema(
     array: { type: [String], default: [] },
   },
   { timestamps: true }
-);
+); 
 
 const Goal = mongoose.model("Goal", goalSchema);
 

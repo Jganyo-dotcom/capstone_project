@@ -5,7 +5,7 @@ const reward_model = require("../../shared models/reward_model");
 wp.setVapidDetails(
   "mailto:elikemejay@gmail.com",
   process.env.PUBLIC_KEY,
-  process.env.PRIVATE_KEY
+  process.env.PRIVATE_KEY,
 );
 const baseUrl = process.env.APP_BASE_URL || "http://localhost:3000";
 
@@ -38,6 +38,7 @@ const baseUrl = process.env.APP_BASE_URL || "http://localhost:3000";
 //   }
 // }
 
+// run at 6 am and at 10 am
 async function sendDailyNoti() {
   try {
     const goals = await Goal.find({
@@ -68,12 +69,91 @@ async function sendDailyNoti() {
 
         await wp.sendNotification(step.subscription, payload);
         console.log(
-          `Daily notification sent to user ${goal.user} for step ${step.name}`
+          `Daily notification sent to user ${goal.user} for step ${step.name}`,
         );
       } else if (step && step.completed === true) {
         // If the current step is done, move to the next one
         goal.lastNotifiedStep = currentIndex + 1;
         await goal.save();
+      }
+    }
+  } catch (err) {
+    console.error("Error sending daily notifications:", err);
+  }
+}
+
+//run at the middle of day at 3pm
+async function sendDailyNotisecond() {
+  try {
+    const goals = await Goal.find({
+      status: "active",
+      startDate: { $lte: new Date() },
+      endDate: { $gte: new Date() },
+      "steps.frequency": "Daily",
+    });
+    console.log(goals);
+
+    for (const goal of goals) {
+      // figure out which step we should notify
+      const currentIndex = goal.lastNotifiedStep ?? 0;
+      const step = goal.steps[currentIndex];
+
+      if (
+        step &&
+        step.frequency === "Daily" &&
+        step.subscription &&
+        step.subscription.endpoint &&
+        step.completed === false
+      ) {
+        const payload = JSON.stringify({
+          title: "Daily Step reminder",
+          body: `Have you studied today, its not too late to do so `,
+          data: { url: `${baseUrl}` },
+        });
+
+        await wp.sendNotification(step.subscription, payload);
+        console.log(
+          `Daily notification sent to user ${goal.user} for step ${step.name}`,
+        );
+      } else if (step && step.completed === true) {
+        // If the current step is done, move to the next one
+        goal.lastNotifiedStep = currentIndex + 1;
+        await goal.save();
+      }
+    }
+  } catch (err) {
+    console.error("Error sending daily notifications:", err);
+  }
+}
+
+// run once a day at eight oclock
+async function sendDailymoti() {
+  try {
+    const goals = await Goal.find({
+      status: "active",
+      startDate: { $lte: new Date() },
+      endDate: { $gte: new Date() },
+    });
+
+    for (const goal of goals) {
+      // figure out which step we should notify
+      const currentIndex = goal.lastNotifiedStep ?? 0;
+      const step = goal.steps[currentIndex];
+
+      if (step && step.subscription && step.subscription.endpoint) {
+        const payload = JSON.stringify({
+          title: "Hello Brilliant!!",
+          body: " Little by little and you will get there ,smaller steps is the secret",
+          data: { url: `${baseUrl}` },
+        });
+
+        await wp.sendNotification(step.subscription, payload);
+        console.log(
+          `Daily motivation sent to user ${goal.user} for step ${step.name}`,
+        );
+      } else if (step && step.completed === true) {
+        // If the current step is done, move to the next one
+        goal.lastNotifiedStep = currentIndex + 1;
       }
     }
   } catch (err) {
@@ -111,7 +191,7 @@ async function sendWeeklyNoti() {
 
         await wp.sendNotification(step.subscription, payload);
         console.log(
-          `weekly notification sent to user ${goal.user} for step ${step.name}`
+          `weekly notification sent to user ${goal.user} for step ${step.name}`,
         );
       } else if (step && step.completed === true) {
         goal.lastNotifiedStep = currentIndex + 1;
@@ -135,4 +215,9 @@ async function sendWeeklyNoti() {
 
 // reward logic goes here
 
-module.exports = { sendDailyNoti, sendWeeklyNoti };
+module.exports = {
+  sendDailyNoti,
+  sendWeeklyNoti,
+  sendDailyNotisecond,
+  sendDailymoti,
+};

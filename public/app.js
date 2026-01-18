@@ -30,9 +30,17 @@ async function registerUser(e) {
   const email = document.getElementById("regEmail").value.trim().toLowerCase();
   const phone = document.getElementById("regPhone").value.trim();
   const password = document.getElementById("regPassword").value.trim();
+  const confirm_password = document.getElementById("regCPassword").value.trim();
   const status = document.getElementById("registerStatus");
 
-  if (!name || !username || !phone || !password || !email) {
+  if (
+    !name ||
+    !username ||
+    !phone ||
+    !password ||
+    !email ||
+    !confirm_password
+  ) {
     return showMessage(status, "provide info for all fields", "error");
   }
 
@@ -41,18 +49,27 @@ async function registerUser(e) {
     const res = await fetch("/student/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, username, phone, password, email }),
+      body: JSON.stringify({
+        name,
+        username,
+        phone,
+        password,
+        email,
+        confirm_password,
+      }),
     });
     const data = await res.json();
 
-    res.ok
-      ? showMessage(status, data.message, "success")
-      : showMessage(status, data.error || data.message, "error");
-    document.getElementById("regName").value = "";
-    document.getElementById("regUsername").value = "";
-    document.getElementById("regEmail").value = "";
-    document.getElementById("regPhone").value = "";
-    document.getElementById("regPassword").value = "";
+    if (res.ok) {
+      showMessage(status, data.message, "success");
+      document.getElementById("regName").value = "";
+      document.getElementById("regUsername").value = "";
+      document.getElementById("regEmail").value = "";
+      document.getElementById("regPhone").value = "";
+      document.getElementById("regPassword").value = "";
+    } else {
+      showMessage(status, data.error || data.message, "error");
+    }
   } catch {
     showMessage(status, "Network error", "error");
   }
@@ -202,7 +219,7 @@ async function createGoal() {
     return showMessage(
       status,
       "Title , steps , startdate and endate is required",
-      "error"
+      "error",
     );
   }
 
@@ -210,7 +227,7 @@ async function createGoal() {
     return showMessage(
       status,
       "Subscribe to reminders before creating goals",
-      "error"
+      "error",
     );
   }
 
@@ -286,7 +303,7 @@ document.getElementById("subscribeBtn").onclick = async () => {
       return showMessage(
         status,
         "Notifications are blocked. Enable them in browser settings.",
-        "error"
+        "error",
       );
     }
 
@@ -305,7 +322,7 @@ document.getElementById("testPushBtn").onclick = async () => {
       return showMessage(
         status,
         "No subscription found. Click Subscribe first.",
-        "error"
+        "error",
       );
     }
 
@@ -350,7 +367,7 @@ async function fetchGoals(page = 1, limit = 10) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-      }
+      },
     );
     const data = await res.json();
 
@@ -476,7 +493,7 @@ async function markStepDone(goalId, stepIndex) {
       return showMessage(
         status,
         data.message || "Failed to submit step",
-        "error"
+        "error",
       );
     }
 
@@ -607,7 +624,7 @@ function renderCalendar(completedDates, completedWeeks) {
   // ✅ Normalize sets
   // Daily completions → compare by toDateString
   const completedSet = new Set(
-    completedDates.map((d) => new Date(d).toDateString())
+    completedDates.map((d) => new Date(d).toDateString()),
   );
 
   // Weekly completions → convert serialized strings back to Date, then to timestamp

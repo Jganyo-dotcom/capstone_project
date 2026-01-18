@@ -23,6 +23,9 @@ const registerNewUser = async (req, res) => {
   if (existing_username) {
     return res.status(400).json({ message: "username already taken" });
   }
+  if (value.confirm_password !== value.password) {
+    return res.status(400).json({ message: "passwords do not much" });
+  }
 
   try {
     //hash password
@@ -78,7 +81,7 @@ const LoginUser = async (req, res) => {
     //compare passwords and login
     const compare_passwords = await bcrypt.compare(
       value.password,
-      tryingToLoginUser.password
+      tryingToLoginUser.password,
     );
     if (!compare_passwords) {
       return res.status(401).json({ message: "invalid credentials" });
@@ -94,7 +97,7 @@ const LoginUser = async (req, res) => {
         phone: tryingToLoginUser.phone,
       },
       process.env.JWT_SECRETE,
-      { expiresIn: process.env.EXPIRES_IN }
+      { expiresIn: process.env.EXPIRES_IN },
     );
 
     const safe_user = {
