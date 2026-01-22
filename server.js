@@ -9,6 +9,17 @@ const notiRoute = require("./src/modules/notification & reward module/noti_route
 const CreateRoute = require("./src/modules/Goal_managent_module/student_goal_route");
 const streakRoute = require("./src/modules/streak_engine_module/student_route");
 require("./src/shared models/cron");
+const cors = require("cors");
+
+// npm install cors
+app.use(
+  cors({
+    origin: ["http://localhost:5173"], // or '*' for dev only
+  }),
+);
+
+// your routes...
+app.listen(3000);
 
 app.use(morgan("dev"));
 app.use(express.json());

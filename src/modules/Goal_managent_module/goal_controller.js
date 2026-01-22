@@ -6,7 +6,7 @@ const streak_model = require("../../shared models/streak_model.js");
 wp.setVapidDetails(
   "mailto:elikemejay@gmail.com",
   process.env.PUBLIC_KEY,
-  process.env.PRIVATE_KEY
+  process.env.PRIVATE_KEY,
 );
 const createGoal = async (req, res, next) => {
   try {
@@ -270,7 +270,7 @@ const deleteStep = async (req, res, next) => {
 
 async function clearGoals(req, res) {
   try {
-    await GoalModel.deleteMany({ user: req.user.id });
+    await GoalModel.deleteMany({});
     res.status(200).json({ message: "All goals cleared successfully" });
   } catch (err) {
     console.error("Error clearing goals:", err);

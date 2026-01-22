@@ -30,7 +30,7 @@ const createGoalSchema = Joi.object({
             auth: Joi.string().required(),
           }).required(),
         }).required(),
-      })
+      }),
     )
     .min(1)
     .required(),
@@ -45,7 +45,7 @@ const validateCreateGoal = (req, res, next) => {
       error: error.details[0].message,
     });
   }
-
+  console.log("eiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
   next();
 };
 
