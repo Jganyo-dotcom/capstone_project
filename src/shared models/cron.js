@@ -3,7 +3,7 @@ const {
   sendDailyNoti,
   sendWeeklyNoti,
   sendDailyNotisecond,
-  sendDailymoti
+  sendDailymoti,
 } = require("../modules/notification & reward module/controller");
 
 // Every day at midnight (00:00)
@@ -13,7 +13,7 @@ const {
 // });
 
 // Every 15 minutes
-cron.schedule("*/1 * * * *", () => {
+cron.schedule("*/14 * * * *", () => {
   console.log("Running notification job...");
   sendDailyNoti();
 });

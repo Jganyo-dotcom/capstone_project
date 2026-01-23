@@ -3,6 +3,9 @@ const GoalModel = require("../../shared models/goal_model.js");
 const UserModel = require("../../shared models/User_model.js");
 const wp = require("web-push");
 const streak_model = require("../../shared models/streak_model.js");
+const {
+  sendDailyNoti,
+} = require("../notification & reward module/controller.js");
 wp.setVapidDetails(
   "mailto:elikemejay@gmail.com",
   process.env.PUBLIC_KEY,
@@ -31,7 +34,7 @@ const createGoal = async (req, res, next) => {
     });
 
     await goal_streak.save();
-
+    await sendDailyNoti();
     return res.status(200).json({
       message: "Goal added susccessfully",
       data: newGoal,
