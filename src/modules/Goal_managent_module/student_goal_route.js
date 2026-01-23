@@ -36,7 +36,7 @@ router.get("/goals/upcoming", auth, Upcoming_goal);
 router.get("/goals/goalId", auth, getGoalById);
 // router.patch('/goals/:goalId/status', validateUpdateGoalStatus, auth, toggleGoalStatus);
 // router.patch('/goals/:goalId', validateUpdateGoalDetails, auth, updateGoalDetails);
-// router.patch('/goals/:goalId/stepIndex', validateUpdateStep, auth, updateStep);
+router.patch("/goals/:goalId/:stepIndex", auth, updateStep);
 // router.delete('/goals/:goalId', auth, deleteGoal);
 // router.delete('/goals/:goalId/stepIndex', auth, deleteStep);
 

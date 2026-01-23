@@ -73,6 +73,7 @@ const addStep = async (req, res, next) => {
 
 const updateStep = async (req, res, next) => {
   try {
+    console.log("i am hit");
     const goal = await GoalModel.findOne({
       _id: req.params.goalId,
       user: req.user.id,
@@ -82,11 +83,23 @@ const updateStep = async (req, res, next) => {
       return res.status(404).json({ message: "Goal not found" });
     }
 
-    goal.steps[req.params.stepIndex].completed = req.body.completed;
+    const stepIndex = parseInt(req.params.stepIndex, 10);
+    const step = goal.steps[stepIndex];
+
+    if (!step) {
+      return res.status(404).json({ message: "Step not found" });
+    }
+
+    // Merge any fields from body into the step
+    Object.assign(step, req.body);
 
     await goal.save();
 
-    res.json(goal.steps[req.params.stepIndex]);
+    return res.status(200).json({
+      message: "Step updated",
+      step,
+      steps: goal.steps, // return all steps for frontend convenience
+    });
   } catch (error) {
     console.error(error);
     next(error);

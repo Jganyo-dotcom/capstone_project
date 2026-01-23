@@ -14,11 +14,11 @@ const cors = require("cors");
 // npm install cors
 app.use(
   cors({
-    origin: ["http://localhost:5173"], // or '*' for dev only
+    origin: ["https://focuset.netlify.app"], // touch not 
   }),
 );
 
-// your routes...
+// my-routes...
 app.listen(3000);
 
 app.use(morgan("dev"));
