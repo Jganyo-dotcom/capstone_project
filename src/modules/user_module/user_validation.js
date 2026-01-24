@@ -14,4 +14,15 @@ const validationForLogin = Joi.object({
   password: Joi.string().min(6).required(),
 });
 
-module.exports = { validationForRegisterSchema, validationForLogin };
+const validationForUpdateProfile = Joi.object({
+  name: Joi.string().min(5).optional(),
+  username: Joi.string().min(2).optional(),
+  email: Joi.string().email().optional(),
+  phone: Joi.string().min(6).default("N/A"),
+});
+
+module.exports = {
+  validationForRegisterSchema,
+  validationForLogin,
+  validationForUpdateProfile,
+};

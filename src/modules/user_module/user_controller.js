@@ -2,6 +2,7 @@ const UserSchema = require("../../shared models/User_model");
 const {
   validationForRegisterSchema,
   validationForLogin,
+  validationForUpdateProfile,
 } = require("./user_validation");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -118,8 +119,72 @@ const LoginUser = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: "something went wrong while logging in" });
+    return res
+      .status(500)
+      .json({ message: "something went wrong while logging in" });
   }
 };
 
-module.exports = { registerNewUser, LoginUser };
+const editMyProfile = async (req, res) => {
+  try {
+    const { error, value } = validationForUpdateProfile.validate(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+
+    const userId = req.user.id;
+    const thePerson = await UserSchema.findById(userId).select("-password");
+    if (!thePerson) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const updatedProfile = await UserSchema.findByIdAndUpdate(userId, value, {
+      new: true,
+      runValidators: true,
+    }).select("-password");
+
+    return res.status(200).json({
+      message: "Profile updated successfully",
+      updatedProfile,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: err });
+  }
+};
+
+const changePassword = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const thePerson = await UserSchema.findById(userId);
+
+    if (!thePerson) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const { oldPassword, newPassword } = req.body;
+
+    // Compare old password with stored hash
+    const isMatch = await bcrypt.compare(oldPassword, thePerson.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Password is incorrect" });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update password
+    await UserSchema.findByIdAndUpdate(
+      userId,
+      { password: hashedNewPassword },
+      { new: true },
+    );
+
+    return res.status(200).json({ message: "Password changed successfully" });
+  } catch (err) {
+    return res.status(500).json({ message: err });
+  }
+};
+
+module.exports = { registerNewUser, LoginUser, editMyProfile, changePassword };
